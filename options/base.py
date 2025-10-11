@@ -61,28 +61,26 @@ class Option:
         # Input
         args = []
         for i, input_arg in enumerate(self.inputs):
-            print(
-                f"Input {i + 1}/{len(self.inputs)}, Type: {input_arg.type}, Desc: {input_arg.description}"
-            )
+            print(f"输入： {i + 1}/{len(self.inputs)}, 类型：{input_arg.type}")
             res = input_arg.exec_input()
-            print(f' - Input: "{res}"')
+            print(f' - 描述：{input_arg.description}, 输入："{res}"')
             args.append(res)
         # Check
         if self.check_func is not None:
             if not self.check_func(*args):
-                print(" - exec: Check Failed.")
+                print(" - 检查未通过。")
                 return
         # Confirm
         match self.confirm:
             case ConfirmType.NoConfirm:
                 pass
             case ConfirmType.DefaultYes:
-                confirm = input("Confirm? [Y/n]:")
+                confirm = input("确认？ [Y/n]:")
                 go_pass = len(confirm) == 0 or confirm.lower().startswith("y")
                 if not go_pass:
                     return
             case ConfirmType.DefaultNo:
-                confirm = input("Confirm? [y/N]:")
+                confirm = input("确认？ [y/N]:")
                 go_pass = confirm.lower().startswith("y")
                 if not go_pass:
                     return
