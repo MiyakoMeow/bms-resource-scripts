@@ -1,3 +1,10 @@
 [project]
 name = "boftt-pack-generator-scripts"
-dependencies = ["py7zr", "rarfile"]
+version = "0.1.0"
+requires-python = ">=3.9"
+dependencies = [
+    "py7zr>=1.0.0",
+    "rarfile>=4.2",
+    "openpyxl>=3.1.5",
+]
+
