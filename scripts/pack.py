@@ -1,10 +1,9 @@
 import os
 
 from fs import remove_empty_folder
-from fs.sync import sync_folder, SYNC_PRESET_FOR_APPEND
-from fs.rawpack import get_num_set_file_names
 from fs.move import is_dir_having_file
-
+from fs.rawpack import get_num_set_file_names
+from fs.sync import SYNC_PRESET_FOR_APPEND, sync_folder
 from media.audio import (
     AUDIO_PRESET_FLAC,
     AUDIO_PRESET_FLAC_FFMPEG,
@@ -12,18 +11,17 @@ from media.audio import (
     bms_folder_transfer_audio,
 )
 from media.video import (
-    VIDEO_PRESET_MPEG1VIDEO_512X512,
     VIDEO_PRESET_AVI_512X512,
+    VIDEO_PRESET_MPEG1VIDEO_512X512,
     VIDEO_PRESET_WMV2_512X512,
     bms_folder_transfer_video,
 )
-
 from options.base import Input, InputType, Option
+from options.bms_folder import append_name_by_bms, copy_numbered_workdir_names
 from options.bms_folder_bigpack import (
     REMOVE_MEDIA_RULE_ORAJA,
     remove_unneed_media_files,
 )
-from options.bms_folder import copy_numbered_workdir_names, append_name_by_bms
 from options.rawpack import unzip_numeric_to_bms_folder
 
 

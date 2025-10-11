@@ -1,6 +1,4 @@
-from typing import List
 import webbrowser
-
 from enum import Enum
 
 from options.base import Option
@@ -77,7 +75,7 @@ def jump_to_work_info():
             webbrowser.open_new_tab(event.list_url())
 
 
-OPTIONS: List[Option] = [Option(name="BMS活动：跳转至作品目录", func=jump_to_work_info)]
+OPTIONS: list[Option] = [Option(name="BMS活动：跳转至作品目录", func=jump_to_work_info)]
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import os
-from typing import Callable, Dict, List, Set, Tuple
 import re
 import shutil
+from collections.abc import Callable
 
 from fs.move import (
     REPLACE_OPTION_UPDATE_PACK,
@@ -17,7 +17,7 @@ RE_JAPANESE_KATAKANA = re.compile("[\u30a0-\u30ff]+")
 # 汉字
 RE_CHINESE_CHARACTER = re.compile("[\u4e00-\u9fa5]+")
 
-FIRST_CHAR_RULES: List[Tuple[str, Callable[[str], bool]]] = [
+FIRST_CHAR_RULES: list[tuple[str, Callable[[str], bool]]] = [
     ("0-9", lambda name: "0" <= name[0].upper() <= "9"),
     ("ABCD", lambda name: "A" <= name[0].upper() <= "D"),
     ("EFGHIJK", lambda name: "E" <= name[0].upper() <= "K"),
@@ -65,7 +65,7 @@ def undo_split_pack(root_dir: str):
         os.mkdir(root_dir)
     root_folder_name = os.path.split(root_dir)[-1]
     parent_dir = os.path.join(root_dir, "..")
-    pairs: List[Tuple[str, str]] = []
+    pairs: list[tuple[str, str]] = []
     for folder_name in os.listdir(parent_dir):
         folder_path = os.path.join(parent_dir, folder_name)
         if folder_name.startswith(f"{root_folder_name} [") and folder_name.endswith(
@@ -83,13 +83,13 @@ def undo_split_pack(root_dir: str):
 
 
 def merge_split_folders(root_dir: str):
-    dir_names: List[str] = [
+    dir_names: list[str] = [
         dir_name
         for dir_name in os.listdir(root_dir)
         if os.path.isdir(os.path.join(root_dir, dir_name))
     ]
 
-    pairs: List[Tuple[str, str]] = []
+    pairs: list[tuple[str, str]] = []
 
     for dir_name in dir_names:
         dir_path = os.path.join(root_dir, dir_name)
@@ -116,9 +116,7 @@ def merge_split_folders(root_dir: str):
             ]
             if len(dir_names_with_starter) > 2:
                 print(
-                    " !_! {} have more then 2 folders! {}".format(
-                        dir_name_without_artist, dir_names_with_starter
-                    )
+                    f" !_! {dir_name_without_artist} have more then 2 folders! {dir_names_with_starter}"
                 )
                 continue
 
@@ -127,7 +125,7 @@ def merge_split_folders(root_dir: str):
 
     # Check dumplate
     last_from_dir_name = ""
-    dumplate_list: List[str] = []
+    dumplate_list: list[str] = []
     for target_dir_name, from_dir_name in pairs:
         if last_from_dir_name == from_dir_name:
             dumplate_list.append(from_dir_name)
@@ -142,7 +140,7 @@ def merge_split_folders(root_dir: str):
     # Confirm
     for target_dir_name, from_dir_name in pairs:
         # Print
-        print("- Find Dir pair: {} <- {}".format(target_dir_name, from_dir_name))
+        print(f"- Find Dir pair: {target_dir_name} <- {from_dir_name}")
 
     selection = input(f"There are {len(pairs)} actions. Do transfering? [y/N]:")
     if not selection.lower().startswith("y"):
@@ -187,10 +185,10 @@ def move_works_in_pack(root_dir_from: str, root_dir_to: str):
 
 
 def _workdir_remove_unneed_media_files(
-    work_dir: str, rule: List[Tuple[List[str], List[str]]]
+    work_dir: str, rule: list[tuple[list[str], list[str]]]
 ):
-    remove_pairs: List[Tuple[str, str]] = []
-    removed_files: Set[str] = set()
+    remove_pairs: list[tuple[str, str]] = []
+    removed_files: set[str] = set()
     for file_name in os.listdir(work_dir):
         file_path = os.path.join(work_dir, file_name)
         if not os.path.isfile(file_path):
@@ -226,7 +224,7 @@ def _workdir_remove_unneed_media_files(
         os.remove(replacing_file_path)
 
     # Finished: Count Ext
-    ext_count: Dict[str, List[str]] = dict()
+    ext_count: dict[str, list[str]] = {}
     for file_name in os.listdir(work_dir):
         file_path = os.path.join(work_dir, file_name)
         if not os.path.isfile(file_path):
@@ -245,21 +243,21 @@ def _workdir_remove_unneed_media_files(
         print(f" - Tips: {work_dir} has more than 1 mp4 files! {mp4_count}")
 
 
-REMOVE_MEDIA_RULE_ORAJA: List[Tuple[List[str], List[str]]] = [
+REMOVE_MEDIA_RULE_ORAJA: list[tuple[list[str], list[str]]] = [
     (["mp4"], ["avi", "wmv", "mpg", "mpeg"]),
     (["avi"], ["wmv", "mpg", "mpeg"]),
     (["flac", "wav"], ["ogg"]),
     (["flac"], ["wav"]),
     (["mpg"], ["wmv"]),
 ]
-REMOVE_MEDIA_RULE_WAV_FILL_FLAC: List[Tuple[List[str], List[str]]] = [
+REMOVE_MEDIA_RULE_WAV_FILL_FLAC: list[tuple[list[str], list[str]]] = [
     (["wav"], ["flac"]),
 ]
-REMOVE_MEDIA_RULE_MPG_FILL_WMV: List[Tuple[List[str], List[str]]] = [
+REMOVE_MEDIA_RULE_MPG_FILL_WMV: list[tuple[list[str], list[str]]] = [
     (["mpg"], ["wmv"]),
 ]
 
-REMOVE_MEDIA_FILE_RULES: List[List[Tuple[List[str], List[str]]]] = [
+REMOVE_MEDIA_FILE_RULES: list[list[tuple[list[str], list[str]]]] = [
     REMOVE_MEDIA_RULE_ORAJA,
     REMOVE_MEDIA_RULE_WAV_FILL_FLAC,
     REMOVE_MEDIA_RULE_MPG_FILL_WMV,
@@ -267,9 +265,11 @@ REMOVE_MEDIA_FILE_RULES: List[List[Tuple[List[str], List[str]]]] = [
 
 
 def remove_unneed_media_files(
-    root_dir: str, rule: List[Tuple[List[str], List[str]]] = []
+    root_dir: str, rule: list[tuple[list[str], list[str]]] = None
 ):
     # Select Preset
+    if rule is None:
+        rule = []
     if len(rule) == 0:
         for i, rule in enumerate(REMOVE_MEDIA_FILE_RULES):
             print(f"- {i}: {REMOVE_MEDIA_FILE_RULES[i]}")
@@ -331,20 +331,20 @@ def move_works_with_same_name(root_dir_from: str, root_dir_to: str) -> None:
         raise ValueError(f"目标路径不存在或不是目录: {root_dir_to}")
 
     # 获取源目录中的所有直接子文件夹
-    from_subdirs: List[str] = [
+    from_subdirs: list[str] = [
         d
         for d in os.listdir(root_dir_from)
         if os.path.isdir(os.path.join(root_dir_from, d))
     ]
 
     # 获取目标目录中的所有直接子文件夹
-    to_subdirs: List[str] = [
+    to_subdirs: list[str] = [
         d
         for d in os.listdir(root_dir_to)
         if os.path.isdir(os.path.join(root_dir_to, d))
     ]
 
-    pairs: List[Tuple[str, str, str, str]] = []
+    pairs: list[tuple[str, str, str, str]] = []
 
     # 遍历源目录的每个子文件夹
     for from_dir_name in from_subdirs:
@@ -373,7 +373,7 @@ def move_works_with_same_name(root_dir_from: str, root_dir_to: str) -> None:
         )
 
 
-OPTIONS: List[Option] = [
+OPTIONS: list[Option] = [
     Option(
         split_folders_with_first_char,
         name="BMS大包目录：将该目录下的作品，按照首字符分成多个文件夹",
@@ -405,7 +405,7 @@ OPTIONS: List[Option] = [
     ),
 ]
 
-OPTIONS_LEGACY: List[Option] = [
+OPTIONS_LEGACY: list[Option] = [
     Option(
         merge_split_folders,
         inputs=[Input(InputType.Path, "")],

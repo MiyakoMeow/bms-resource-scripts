@@ -1,11 +1,10 @@
 from collections import defaultdict
-from typing import List, Tuple
 
 
 def extract_work_name(
-    titles: List[str],
+    titles: list[str],
     remove_unclosed_pair: bool = True,
-    remove_tailing_sign_list: List[str] = [],
+    remove_tailing_sign_list: list[str] = None,
 ) -> str:
     """
     从多个BMS文件标题中提取共同的作品名（改进版）
@@ -14,6 +13,8 @@ def extract_work_name(
     :return: 提取出的共同作品名（经过后处理）
     """
     # 统计所有可能前缀的出现次数
+    if remove_tailing_sign_list is None:
+        remove_tailing_sign_list = []
     prefix_counts = defaultdict(int)
     for title in titles:
         for i in range(1, len(title) + 1):
@@ -46,7 +47,9 @@ def extract_work_name(
 
 
 def _extract_work_name_post_process(
-    s: str, remove_unclosed_pair: bool = True, remove_tailing_sign_list: List[str] = []
+    s: str,
+    remove_unclosed_pair: bool = True,
+    remove_tailing_sign_list: list[str] = None,
 ) -> str:
     """
     后处理函数：移除未闭合括号及其后续内容
@@ -56,12 +59,14 @@ def _extract_work_name_post_process(
     """
 
     # 清除前后空格
+    if remove_tailing_sign_list is None:
+        remove_tailing_sign_list = []
     s = s.strip()
 
     while True:
         triggered = False
         if remove_unclosed_pair:
-            stack: List[Tuple[str, int]] = []
+            stack: list[tuple[str, int]] = []
 
             # 遍历字符串记录括号状态
             pairs = [

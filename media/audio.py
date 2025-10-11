@@ -1,9 +1,7 @@
+import multiprocessing
 import os
 import subprocess
 import time
-import multiprocessing
-from typing import List, Optional, Tuple
-
 
 """
 Audio
@@ -11,9 +9,7 @@ Audio
 
 
 class AudioPreset:
-    def __init__(
-        self, exec: str, output_format: str, arg: Optional[str] = None
-    ) -> None:
+    def __init__(self, exec: str, output_format: str, arg: str | None = None) -> None:
         self.exec = exec
         self.output_format = output_format
         self.arg = arg
@@ -67,8 +63,8 @@ def _get_audio_precess_cmd(
 
 def transfer_audio_by_format_in_dir(
     dir: str,
-    input_exts: List[str],
-    presets: List[AudioPreset],
+    input_exts: list[str],
+    presets: list[AudioPreset],
     remove_origin_file_when_success: bool = True,
     remove_origin_file_when_failed: bool = False,
     remove_existing_target_file: bool = True,
@@ -79,14 +75,12 @@ def transfer_audio_by_format_in_dir(
     wav ogg ogg -ab 320k
     """
 
-    def check_input_file(
-        dir: str, file_name: str, input_exts: List[str]
-    ) -> Optional[str]:
+    def check_input_file(dir: str, file_name: str, input_exts: list[str]) -> str | None:
         file_path = os.path.join(dir, file_name)
         if not os.path.isfile(file_path):
             return None
         # Check ext
-        ext_found: Optional[str] = None
+        ext_found: str | None = None
         for ext in input_exts:
             if file_path.lower().endswith("." + ext):
                 ext_found = ext
@@ -96,7 +90,7 @@ def transfer_audio_by_format_in_dir(
 
     def spawn_parse_audio_process(
         file_path: str, preset_index: int, preset: AudioPreset
-    ) -> Tuple[Tuple[str, int], Optional[subprocess.Popen]]:
+    ) -> tuple[tuple[str, int], subprocess.Popen | None]:
         # New cmd
         output_file_path = (
             file_path[: -len(file_path.rsplit(".")[-1])] + preset.output_format
@@ -137,8 +131,8 @@ def transfer_audio_by_format_in_dir(
     )
 
     # Submit
-    processes: List[Tuple[Tuple[str, int], Optional[subprocess.Popen]]] = []
-    task_args: List[Tuple[str, int, AudioPreset]] = [
+    processes: list[tuple[tuple[str, int], subprocess.Popen | None]] = []
+    task_args: list[tuple[str, int, AudioPreset]] = [
         (os.path.join(dir, file_name), 0, presets[0])
         for file_name in os.listdir(dir)
         if check_input_file(dir, file_name, input_exts) is not None
@@ -150,7 +144,7 @@ def transfer_audio_by_format_in_dir(
 
     # Count
     file_count = len(task_args)
-    fallback_file_names: List[Tuple[str, int]] = []
+    fallback_file_names: list[tuple[str, int]] = []
 
     for task_arg in task_args:
         if len(processes) >= max_workers:
@@ -160,10 +154,10 @@ def transfer_audio_by_format_in_dir(
 
     # 等待所有任务完成
     while len(processes) > 0:
-        new_processes: List[Tuple[Tuple[str, int], Optional[subprocess.Popen]]] = []
+        new_processes: list[tuple[tuple[str, int], subprocess.Popen | None]] = []
 
         # 检查进程状态
-        switch_next_list: List[Tuple[str, int]] = []
+        switch_next_list: list[tuple[str, int]] = []
         for process in processes:
             (file_path, preset_index), process = process
             # Switch Next?
@@ -241,7 +235,7 @@ def transfer_audio_by_format_in_dir(
     return not has_error
 
 
-MODES: List[Tuple[str, List[str], List[AudioPreset]]] = [
+MODES: list[tuple[str, list[str], list[AudioPreset]]] = [
     (
         "Convert: WAV to FLAC",
         ["wav"],
@@ -262,13 +256,17 @@ MODES: List[Tuple[str, List[str], List[AudioPreset]]] = [
 
 def bms_folder_transfer_audio(
     root_dir: str,
-    input_ext: List[str] = [],
-    transfer_mode: List[AudioPreset] = [],
+    input_ext: list[str] = None,
+    transfer_mode: list[AudioPreset] = None,
     remove_origin_file_when_success: bool = True,
     remove_origin_file_when_failed: bool = True,
     skip_on_fail: bool = False,
 ):
     # Select Modes
+    if transfer_mode is None:
+        transfer_mode = []
+    if input_ext is None:
+        input_ext = []
     if len(transfer_mode) == 0 or len(input_ext) == 0:
         for i, (mode_str, mode_input_exts, mode_presets) in enumerate(MODES):
             print(f"- {i}: {mode_str} ({mode_input_exts}) ({mode_presets})")

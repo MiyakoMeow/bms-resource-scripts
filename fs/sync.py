@@ -1,9 +1,7 @@
+import hashlib
 import os
 import shutil
-from typing import List, Tuple
-
 from enum import Enum
-import hashlib
 
 
 class SoftSyncExec(Enum):
@@ -28,10 +26,10 @@ class SoftSyncPreset:
     def __init__(
         self,
         name: str = "本地文件同步预设",
-        allow_src_exts: List[str] = [],
-        disallow_src_exts: List[str] = [],
+        allow_src_exts: list[str] = None,
+        disallow_src_exts: list[str] = None,
         allow_other_exts: bool = True,
-        no_activate_ext_bound_pairs: List[Tuple[List[str], List[str]]] = [],
+        no_activate_ext_bound_pairs: list[tuple[list[str], list[str]]] = None,
         remove_dst_extra_files: bool = True,
         check_file_size: bool = True,
         check_file_mtime: bool = True,
@@ -39,6 +37,12 @@ class SoftSyncPreset:
         remove_src_same_files: bool = False,
         exec: SoftSyncExec = SoftSyncExec.COPY,
     ) -> None:
+        if no_activate_ext_bound_pairs is None:
+            no_activate_ext_bound_pairs = []
+        if disallow_src_exts is None:
+            disallow_src_exts = []
+        if allow_src_exts is None:
+            allow_src_exts = []
         self.name = name
         self.allow_src_exts = allow_src_exts
         self.disallow_src_exts = disallow_src_exts
@@ -123,7 +127,7 @@ SYNC_PRESET_CACHE = SoftSyncPreset(
     exec=SoftSyncExec.NONE,
 )
 
-SYNC_PRESETS: List[SoftSyncPreset] = [
+SYNC_PRESETS: list[SoftSyncPreset] = [
     SYNC_PRESET_DEFAULT,
     SYNC_PRESET_FOR_APPEND,
     SYNC_PRESET_FLAC,
@@ -141,11 +145,11 @@ def sync_folder(
     dst_list = os.listdir(dst_dir)
 
     # Cache For Print
-    _src_copy_files: List[str] = []
-    _src_move_files: List[str] = []
-    _src_remove_files: List[str] = []
-    _dst_remove_files: List[str] = []
-    _dst_remove_dirs: List[str] = []
+    _src_copy_files: list[str] = []
+    _src_move_files: list[str] = []
+    _src_remove_files: list[str] = []
+    _dst_remove_files: list[str] = []
+    _dst_remove_dirs: list[str] = []
 
     # Src: Copy or Move or Remove
     for src_element in src_list:

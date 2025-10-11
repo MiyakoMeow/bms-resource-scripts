@@ -1,9 +1,8 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from enum import Enum
 import os
 import shutil
-from typing import Dict, List, Tuple
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
+from enum import Enum
 
 
 def is_dir_having_file(dir_path: str) -> bool:
@@ -49,21 +48,13 @@ class ReplaceAction(Enum):
 
 @dataclass
 class ReplaceOptions:
-    ext: Dict[str, ReplaceAction] = field(default_factory=dict)
+    ext: dict[str, ReplaceAction] = field(default_factory=dict)
     default: ReplaceAction = ReplaceAction.Replace
 
 
 REPLACE_OPTION_UPDATE_PACK = ReplaceOptions(
-    ext=dict(
-        (ext, ReplaceAction.CheckReplace)
-        for ext in [
-            "bms",
-            "bml",
-            "bme",
-            "pms",
-            "txt",
-            "bmson",
-        ]
+    ext=dict.fromkeys(
+        ["bms", "bml", "bme", "pms", "txt", "bmson"], ReplaceAction.CheckReplace
     ),
     default=ReplaceAction.Replace,
 )
@@ -82,7 +73,7 @@ def move_elements_across_dir(
     if not os.path.isdir(dir_path_dst):
         os.mkdir(dir_path_dst)
 
-    next_folder_paths: List[Tuple[str, str]] = []
+    next_folder_paths: list[tuple[str, str]] = []
 
     def move_action(ori_path: str, dst_path: str):
         if options.print_info:
@@ -153,7 +144,7 @@ def move_elements_across_dir(
     # Start
     with ThreadPoolExecutor(max_workers=4) as executor:
         # 提交任务
-        dir_lists: List[Tuple[str, str]] = [
+        dir_lists: list[tuple[str, str]] = [
             (
                 os.path.join(dir_path_ori, element_name),
                 os.path.join(dir_path_dst, element_name),

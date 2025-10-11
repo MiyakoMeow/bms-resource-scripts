@@ -2,15 +2,14 @@ import copy
 import json
 import os
 import subprocess
-from typing import Any, Dict, List, Optional, Tuple
-
+from typing import Any
 
 """
 Media
 """
 
 
-def get_media_file_probe(file_path: str) -> Dict[Any, Any]:
+def get_media_file_probe(file_path: str) -> dict[Any, Any]:
     cmd = (
         f'ffprobe -show_format -show_streams -print_format json -v quiet "{file_path}"'
     )
@@ -37,10 +36,10 @@ class VideoInfo:
         self.bit_rate = bit_rate
 
 
-def get_video_info(file_path: str) -> Optional[VideoInfo]:
+def get_video_info(file_path: str) -> VideoInfo | None:
     probe = get_media_file_probe(file_path)
     for stream in probe["streams"]:
-        stream: Dict[Any, Any] = stream
+        stream: dict[Any, Any] = stream
         if stream["codec_type"] != "video":
             continue
         return VideoInfo(
@@ -52,10 +51,10 @@ def get_video_info(file_path: str) -> Optional[VideoInfo]:
     return None
 
 
-def get_video_size(file_path: str) -> Optional[Tuple[int, int]]:
+def get_video_size(file_path: str) -> tuple[int, int] | None:
     probe = get_media_file_probe(file_path)
     for stream in probe["streams"]:
-        stream: Dict[Any, Any] = stream
+        stream: dict[Any, Any] = stream
         if stream["codec_type"] != "video":
             continue
         return (
@@ -75,11 +74,11 @@ class VideoPreset:
     def __init__(
         self,
         exec: str,
-        input_arg: Optional[str],
-        fliter_arg: Optional[str],
+        input_arg: str | None,
+        fliter_arg: str | None,
         output_file_ext: str,
         output_codec: str,
-        arg: Optional[str] = None,
+        arg: str | None = None,
     ) -> None:
         self.exec = exec
         self.input_arg = input_arg
@@ -141,7 +140,7 @@ VIDEO_PRESETS = [
 ]
 
 
-def get_prefered_preset_list(file_path: str) -> List[VideoPreset]:
+def get_prefered_preset_list(file_path: str) -> list[VideoPreset]:
     video_size = get_video_size(file_path)
     if video_size is None:
         return []
@@ -162,18 +161,22 @@ def get_prefered_preset_list(file_path: str) -> List[VideoPreset]:
 
 def process_video_in_dir(
     dir: str,
-    input_exts: List[str] = ["mp4", "avi"],
-    presets: List[VideoPreset] = [
-        VIDEO_PRESET_MPEG1VIDEO_512X512,
-        VIDEO_PRESET_WMV2_512X512,
-        VIDEO_PRESET_AVI_512X512,
-    ],
+    input_exts: list[str] = None,
+    presets: list[VideoPreset] = None,
     remove_origin_file: bool = True,
     remove_existing_target_file: bool = True,
     use_prefered: bool = False,
 ) -> bool:
+    if presets is None:
+        presets = [
+            VIDEO_PRESET_MPEG1VIDEO_512X512,
+            VIDEO_PRESET_WMV2_512X512,
+            VIDEO_PRESET_AVI_512X512,
+        ]
+    if input_exts is None:
+        input_exts = ["mp4", "avi"]
     has_error = False
-    file_name_list: List[str] = []
+    file_name_list: list[str] = []
     for file_name in os.listdir(dir):
         file_path = os.path.join(dir, file_name)
         if not os.path.isfile(file_path):
@@ -214,9 +217,7 @@ def process_video_in_dir(
             # Process
             cmd = preset.get_video_process_cmd(file_path, output_file_path)
             print(f"Processing Video: {file_path} Preset: {preset}")
-            result = subprocess.run(
-                cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
+            result = subprocess.run(cmd, shell=True, capture_output=True)
             if result.returncode != 0:
                 if os.path.isfile(output_file_path):
                     os.remove(output_file_path)
@@ -238,7 +239,7 @@ def process_video_in_dir(
     return not has_error
 
 
-PRESETS: List[Tuple[str, VideoPreset]] = [
+PRESETS: list[tuple[str, VideoPreset]] = [
     ("MP4 -> AVI 512x512", VIDEO_PRESET_AVI_512X512),
     ("MP4 -> AVI 480p", VIDEO_PRESET_AVI_480P),
     ("MP4 -> WMV2 512x512", VIDEO_PRESET_WMV2_512X512),
@@ -250,12 +251,16 @@ PRESETS: List[Tuple[str, VideoPreset]] = [
 
 def bms_folder_transfer_video(
     root_dir: str,
-    input_exts: List[str] = ["mp4"],
-    presets: List[VideoPreset] = [],
+    input_exts: list[str] = None,
+    presets: list[VideoPreset] = None,
     remove_origin_file: bool = True,
     remove_existing_target_file: bool = True,
     use_prefered: bool = False,
 ):
+    if presets is None:
+        presets = []
+    if input_exts is None:
+        input_exts = ["mp4"]
     if len(presets) == 0:
         for i, (mode_str, mode_args) in enumerate(PRESETS):
             print(f"- {i}: {mode_str} ({mode_args})")

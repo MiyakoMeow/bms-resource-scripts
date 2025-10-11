@@ -1,7 +1,8 @@
-from enum import Enum, auto
-from dataclasses import dataclass, field
 import os
-from typing import Any, Callable, List, Optional
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from enum import Enum, auto
+from typing import Any
 
 from bms import CHART_FILE_EXTS, MEDIA_FILE_EXTS
 from fs.input import input_path
@@ -51,8 +52,8 @@ class ConfirmType(Enum):
 class Option:
     func: Callable[..., None]
     name: str = ""
-    inputs: List[Input] = field(default_factory=list)
-    check_func: Optional[Callable[..., bool]] = None
+    inputs: list[Input] = field(default_factory=list)
+    check_func: Callable[..., bool] | None = None
     confirm: ConfirmType = ConfirmType.DefaultYes
 
     def exec(self) -> None:

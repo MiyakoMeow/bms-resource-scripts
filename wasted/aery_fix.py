@@ -1,10 +1,9 @@
 import os
-from typing import List, Tuple
 
 from fs import (
     REPLACE_OPTION_UPDATE_PACK,
-    move_elements_across_dir,
     bms_dir_similarity,
+    move_elements_across_dir,
 )
 
 
@@ -19,7 +18,7 @@ def main():
         dir for dir in os.listdir(src_dir) if os.path.isdir(os.path.join(src_dir, dir))
     ]
     # 扫描所有带aery的目录
-    aery_pair: List[Tuple[str, str, float]] = []
+    aery_pair: list[tuple[str, str, float]] = []
     for dir in dirs:
         if dir.find("Aery") == -1 and dir.find("AERY") == -1:
             continue

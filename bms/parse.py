@@ -1,8 +1,8 @@
-from enum import Enum
 import json
 import os
-from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 from bms.encoding import get_bms_file_str
 
@@ -23,10 +23,10 @@ class BMSInfo:
     genre: str
     difficulty: BMSDifficulty = BMSDifficulty.Unknown
     playlevel: int = 0
-    bmp_formats: List[str] = field(default_factory=list)
+    bmp_formats: list[str] = field(default_factory=list)
 
 
-def parse_bms_file(file_path: str, encoding: Optional[str] = None) -> BMSInfo:
+def parse_bms_file(file_path: str, encoding: str | None = None) -> BMSInfo:
     title = ""
     artist = ""
     genre = ""
@@ -70,7 +70,7 @@ def parse_bms_file(file_path: str, encoding: Optional[str] = None) -> BMSInfo:
     return BMSInfo(title, artist, genre, difficulty, playlevel, ext_list)
 
 
-def parse_bmson_file(file_path: str, encoding: Optional[str] = None) -> BMSInfo:
+def parse_bmson_file(file_path: str, encoding: str | None = None) -> BMSInfo:
     title = ""
     artist = ""
     genre = ""
@@ -81,13 +81,13 @@ def parse_bmson_file(file_path: str, encoding: Optional[str] = None) -> BMSInfo:
         file_str = get_bms_file_str(file_bytes, encoding)
 
         try:
-            bmson_info: Dict[Any, Any] = json.loads(file_str)
+            bmson_info: dict[Any, Any] = json.loads(file_str)
         except json.JSONDecodeError:
             print(f" !_!: Json Decode Error! {file_path}")
             return BMSInfo("Error", "Error", "Error")
 
         # Get info
-        def dict_get(dict: Dict[Any, Any], *info) -> Optional[Any]:
+        def dict_get(dict: dict[Any, Any], *info) -> Any | None:
             now = dict
             for i in info:
                 if now is not None:

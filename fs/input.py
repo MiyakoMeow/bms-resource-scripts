@@ -14,7 +14,7 @@ def input_path() -> str:
         with open(_LOG_FILE_PATH, "w") as f:
             f.write("\n")
     paths = []
-    with open(_LOG_FILE_PATH, "r") as f:
+    with open(_LOG_FILE_PATH) as f:
         paths = [path.lstrip() for path in f.readlines()]
         paths = [path for path in paths if len(path) > 0]
         paths = [(path[:-1] if path.endswith("\n") else path) for path in paths]

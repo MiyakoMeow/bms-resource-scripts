@@ -1,10 +1,9 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import multiprocessing
 import os
 import shutil
 import time
-from typing import Dict, List, Optional
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import py7zr
 import rarfile
@@ -35,13 +34,7 @@ def _safe_join(base_dir: str, relative_path: str) -> str:
 
 def _set_mtime(target_path: str, date_time_tuple):
     # date_time_tuple: (Y, M, D, H, M, S)
-    d_gettime = "%s/%s/%s %s:%s" % (
-        date_time_tuple[0],
-        date_time_tuple[1],
-        date_time_tuple[2],
-        date_time_tuple[3],
-        date_time_tuple[4],
-    )
+    d_gettime = f"{date_time_tuple[0]}/{date_time_tuple[1]}/{date_time_tuple[2]} {date_time_tuple[3]}:{date_time_tuple[4]}"
     d_timearry = time.mktime(time.strptime(d_gettime, "%Y/%m/%d %H:%M"))
     try:
         os.utime(target_path, (d_timearry, d_timearry))
@@ -49,7 +42,7 @@ def _set_mtime(target_path: str, date_time_tuple):
         pass
 
 
-def _try_decode_cp932_from_cp437(name: str) -> Optional[str]:
+def _try_decode_cp932_from_cp437(name: str) -> str | None:
     try:
         raw = name.encode("cp437", "strict")
         return raw.decode("cp932", "strict")
@@ -71,9 +64,7 @@ def unzip_zip_file_to_cache_dir(file_path: str, cache_dir_path: str):
             continue
         # 粗略判断是否包含常见日文/中日韩字符
         if any(
-            ("\u3040" <= ch <= "\u30ff")
-            or ("\u3400" <= ch <= "\u9fff")
-            for ch in sjis
+            ("\u3040" <= ch <= "\u30ff") or ("\u3400" <= ch <= "\u9fff") for ch in sjis
         ):
             use_cp932 = True
             break
@@ -144,8 +135,8 @@ def unzip_file_to_cache_dir(file_path: str, cache_dir_path: str):
         shutil.copy(file_path, target_file_path)
 
 
-def get_num_set_file_names(pack_dir: str) -> List[str]:
-    file_id_names: List[str] = []
+def get_num_set_file_names(pack_dir: str) -> list[str]:
+    file_id_names: list[str] = []
     for file_name in os.listdir(pack_dir):
         file_path = os.path.join(pack_dir, file_name)
         if not os.path.isfile(file_path):
@@ -161,11 +152,11 @@ def move_out_files_in_folder_in_cache_dir(cache_dir_path: str) -> bool:
     cache_folder_count = 0
     cache_file_count = 0
     inner_dir_name = None
-    file_ext_count: Dict[str, List[str]] = dict()
+    file_ext_count: dict[str, list[str]] = {}
     done = False
     error = False
     while True:
-        file_ext_count = dict()
+        file_ext_count = {}
         cache_folder_count = 0
         cache_file_count = 0
         inner_dir_name = None

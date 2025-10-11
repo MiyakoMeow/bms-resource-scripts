@@ -5,7 +5,6 @@ from bms.encoding import BOFTT_ID_SPECIFIC_ENCODING_TABLE
 from bms.parse import BMSInfo, parse_bms_file, parse_bmson_file
 from bms.work import extract_work_name
 
-
 BMS_FILE_EXTS = (
     ".bms",
     ".bme",
@@ -21,9 +20,9 @@ IMAGE_FILE_EXTS = (".jpg", ".png", ".bmp", ".svg")
 MEDIA_FILE_EXTS = AUDIO_FILE_EXTS + VIDEO_FILE_EXTS + IMAGE_FILE_EXTS
 
 
-def get_dir_bms_list(dir_path: str) -> List[BMSInfo]:
+def get_dir_bms_list(dir_path: str) -> list[BMSInfo]:
     """仅寻找该目录第一层的文件"""
-    info_list: List[BMSInfo] = []
+    info_list: list[BMSInfo] = []
     # For BOFTT
     id = os.path.split(dir_path)[-1].split(".")[0]
     encoding = BOFTT_ID_SPECIFIC_ENCODING_TABLE.get(id)
@@ -31,7 +30,7 @@ def get_dir_bms_list(dir_path: str) -> List[BMSInfo]:
     for file_name in os.listdir(dir_path):
         file_path = os.path.join(dir_path, file_name)
         # Parse
-        info: Optional[BMSInfo] = None
+        info: BMSInfo | None = None
         if file_name.lower().endswith(BMS_FILE_EXTS) and os.path.isfile(file_path):
             info = parse_bms_file(file_path, encoding)
         elif file_name.lower().endswith(BMSON_FILE_EXTS) and os.path.isfile(file_path):
@@ -42,9 +41,9 @@ def get_dir_bms_list(dir_path: str) -> List[BMSInfo]:
     return info_list
 
 
-def get_dir_bms_info(bms_dir_path: str) -> Optional[BMSInfo]:
+def get_dir_bms_info(bms_dir_path: str) -> BMSInfo | None:
     # Find bmses
-    bms_list: List[BMSInfo] = get_dir_bms_list(bms_dir_path)
+    bms_list: list[BMSInfo] = get_dir_bms_list(bms_dir_path)
     if len(bms_list) == 0:
         return None
     # Split title

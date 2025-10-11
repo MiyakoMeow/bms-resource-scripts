@@ -35,14 +35,14 @@ def bms_dir_similarity(dir_path_a: str, dir_path_b: str) -> float:
         ".png",
     )
 
-    def fetch_dir_elements(dir_path) -> Tuple[List[str], List[str], List[str]]:
-        file_list: List[str] = [name or "" for name in os.listdir(dir_path)]
-        media_list: List[str] = [
+    def fetch_dir_elements(dir_path) -> tuple[list[str], list[str], list[str]]:
+        file_list: list[str] = [name or "" for name in os.listdir(dir_path)]
+        media_list: list[str] = [
             os.path.splitext(name)[0] or ""
             for name in file_list
             if name.endswith(media_ext_list)
         ]
-        non_media_list: List[str] = [
+        non_media_list: list[str] = [
             name for name in file_list if not name.endswith(media_ext_list)
         ]
         return (file_list, media_list, non_media_list)

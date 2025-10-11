@@ -1,5 +1,4 @@
 import codecs
-from typing import Dict, List, Optional, Tuple
 
 ENCODINGS = [
     "shift-jis",
@@ -10,7 +9,7 @@ ENCODINGS = [
     "shift-jisx0213",
 ]
 
-BOFTT_ID_SPECIFIC_ENCODING_TABLE: Dict[str, str] = {
+BOFTT_ID_SPECIFIC_ENCODING_TABLE: dict[str, str] = {
     "134": "utf-8",
     "191": "gbk",
     "435": "gbk",
@@ -20,7 +19,7 @@ BOFTT_ID_SPECIFIC_ENCODING_TABLE: Dict[str, str] = {
 
 
 class PriorityDecoder:
-    def __init__(self, encoding_priority: List[str], final: str = "utf-8"):
+    def __init__(self, encoding_priority: list[str], final: str = "utf-8"):
         """
         初始化优先级解码器
 
@@ -35,7 +34,7 @@ class PriorityDecoder:
 
     def _decode_byte_sequence(
         self, byte_data: bytes, start: int = 0
-    ) -> Tuple[Optional[str], int]:
+    ) -> tuple[str | None, int]:
         """
         尝试用所有编码解码字节序列，返回第一个成功的解码结果和消耗的字节数
 
@@ -100,8 +99,8 @@ class PriorityDecoder:
 
 
 def read_file_with_priority(
-    file_path: str, encoding_priority: List[str], errors: str = "strict"
-) -> Optional[str]:
+    file_path: str, encoding_priority: list[str], errors: str = "strict"
+) -> str | None:
     """
     读取文件并按照编码优先级逐字符解码
 
@@ -118,12 +117,12 @@ def read_file_with_priority(
             byte_data = f.read()
             decoder = PriorityDecoder(encoding_priority)
             return decoder.decode(byte_data, errors)
-    except (IOError, UnicodeDecodeError) as e:
+    except (OSError, UnicodeDecodeError) as e:
         print(f"Error: {e}")
         return None
 
 
-def get_bms_file_str(file_bytes: bytes, encoding: Optional[str] = None) -> str:
+def get_bms_file_str(file_bytes: bytes, encoding: str | None = None) -> str:
     file_str = ""
     encoding_priority = ENCODINGS
     if encoding:

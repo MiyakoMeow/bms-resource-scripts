@@ -1,5 +1,4 @@
 import os
-from typing import List
 
 import openpyxl
 
@@ -69,7 +68,7 @@ def generate_work_info_table(root_dir: str):
     workbook.save(table_path)
 
 
-OPTIONS: List[Option] = [
+OPTIONS: list[Option] = [
     Option(
         check_num_folder,
         name="BMS活动目录：检查各个的编号对应的文件夹是否存在",

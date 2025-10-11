@@ -1,24 +1,23 @@
 import difflib
 import os
 import shutil
-from typing import List, Optional, Tuple
 
 from bms import BMSInfo, get_dir_bms_info
 from fs import bms_dir_similarity
-from fs.name import get_vaild_fs_name
 from fs.move import REPLACE_OPTION_UPDATE_PACK, move_elements_across_dir
+from fs.name import get_vaild_fs_name
 from options.base import Input, InputType, Option, is_root_dir
 
 
 def append_artist_name_by_bms(root_dir: str):
     """该脚本适用于希望在作品文件夹名后添加“ [艺术家]”的情况。"""
-    dir_names: List[str] = [
+    dir_names: list[str] = [
         dir_name
         for dir_name in os.listdir(root_dir)
         if os.path.isdir(os.path.join(root_dir, dir_name))
     ]
 
-    pairs: List[Tuple[str, str]] = []
+    pairs: list[tuple[str, str]] = []
 
     for dir_name in dir_names:
         dir_path = os.path.join(root_dir, dir_name)
@@ -27,12 +26,12 @@ def append_artist_name_by_bms(root_dir: str):
         # Has been set?
         if dir_name.endswith("]"):
             continue
-        bms_info: Optional[BMSInfo] = get_dir_bms_info(dir_path)
+        bms_info: BMSInfo | None = get_dir_bms_info(dir_path)
         if bms_info is None:
             print(f"Dir {dir_path} has no bms files!")
             continue
         new_dir_name = f"{dir_name} [{get_vaild_fs_name(bms_info.artist)}]"
-        print("- Ready to rename: {} -> {}".format(dir_name, new_dir_name))
+        print(f"- Ready to rename: {dir_name} -> {new_dir_name}")
         pairs.append((dir_name, new_dir_name))
 
     selection = input("Do transfering? [y/N]:")
@@ -55,7 +54,7 @@ def _workdir_append_name_by_bms(work_dir: str) -> bool:
         print(f"{work_dir} has been renamed! Skipping...")
         return False
 
-    info: Optional[BMSInfo] = get_dir_bms_info(work_dir)
+    info: BMSInfo | None = get_dir_bms_info(work_dir)
     if info is None:
         print(f"{work_dir} has no bms/bmson files!")
         return False
@@ -92,7 +91,7 @@ def append_name_by_bms(root_dir: str):
 
 
 def _workdir_set_name_by_bms(work_dir: str) -> bool:
-    info: Optional[BMSInfo] = get_dir_bms_info(work_dir)
+    info: BMSInfo | None = get_dir_bms_info(work_dir)
     while info is None:
         print(f"{work_dir} has no bms/bmson files! Trying to move out.")
         bms_dir_elements = os.listdir(work_dir)
@@ -203,7 +202,7 @@ def copy_numbered_workdir_names(root_dir_from: str, root_dir_to: str):
 
 
 def scan_folder_similar_folders(root_dir: str, similarity_trigger: float = 0.7):
-    dir_names: List[str] = [
+    dir_names: list[str] = [
         dir_name
         for dir_name in os.listdir(root_dir)
         if os.path.isdir(os.path.join(root_dir, dir_name))
@@ -244,7 +243,7 @@ def remove_zero_sized_media_files(current_dir: str, print_dir: bool = False):
         print("Not a vaild dir! Aborting...")
         pass
 
-    next_dir_list: List[str] = []
+    next_dir_list: list[str] = []
 
     for element_name in os.listdir(current_dir):
         element_path = os.path.join(current_dir, element_name)
@@ -271,7 +270,7 @@ def remove_zero_sized_media_files(current_dir: str, print_dir: bool = False):
         )
 
 
-OPTIONS: List[Option] = [
+OPTIONS: list[Option] = [
     Option(
         set_name_by_bms,
         name="BMS根目录：按照BMS设置文件夹名",

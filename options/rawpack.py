@@ -1,14 +1,12 @@
 import os
 import shutil
-from typing import List
 
-
+from fs.move import is_dir_having_file, move_elements_across_dir
 from fs.rawpack import (
     get_num_set_file_names,
     move_out_files_in_folder_in_cache_dir,
     unzip_file_to_cache_dir,
 )
-from fs.move import is_dir_having_file, move_elements_across_dir
 from options.base import Input, InputType, Option
 
 
@@ -20,7 +18,7 @@ def unzip_numeric_to_bms_folder(
     if not os.path.isdir(root_dir):
         os.mkdir(root_dir)
 
-    num_set_file_names: List[str] = get_num_set_file_names(pack_dir)
+    num_set_file_names: list[str] = get_num_set_file_names(pack_dir)
 
     if confirm:
         for file_name in num_set_file_names:
@@ -97,7 +95,7 @@ def unzip_with_name_to_bms_folder(
     if not os.path.isdir(root_dir):
         os.mkdir(root_dir)
 
-    num_set_file_names: List[str] = [
+    num_set_file_names: list[str] = [
         file_name
         for file_name in os.listdir(pack_dir)
         if os.path.isfile(os.path.join(pack_dir, file_name))
@@ -171,10 +169,14 @@ def _rename_file_with_num(dir: str, file_name: str, input_num: int):
 
 def _set_file_num(
     dir: str,
-    allow_ext: List[str] = [],
-    disallow_ext: List[str] = [],
+    allow_ext: list[str] = None,
+    disallow_ext: list[str] = None,
     allow_others: bool = True,
 ):
+    if disallow_ext is None:
+        disallow_ext = []
+    if allow_ext is None:
+        allow_ext = []
     file_names = []
     for file_name in os.listdir(dir):
         file_path = os.path.join(dir, file_name)
@@ -234,7 +236,7 @@ def set_file_num(dir: str):
         )
 
 
-OPTIONS: List[Option] = [
+OPTIONS: list[Option] = [
     Option(
         unzip_numeric_to_bms_folder,
         name="BMS原文件：将赋予编号的文件，解压或放置至指定根目录下，带对应编号的作品目录（自动处理文件夹嵌套）",
