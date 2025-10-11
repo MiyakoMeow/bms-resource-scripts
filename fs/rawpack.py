@@ -3,7 +3,7 @@ import multiprocessing
 import os
 import shutil
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional
 import zipfile
 
 import py7zr
@@ -12,57 +12,130 @@ import rarfile
 from fs.move import move_elements_across_dir
 
 
+def _safe_join(base_dir: str, relative_path: str) -> str:
+    # Normalize separators to OS style first
+    rel = relative_path.replace("/", os.sep).replace("\\", os.sep)
+    # Remove drive letters and leading path separators to avoid traversal / drive jump
+    rel = rel.lstrip("/\\")
+    # Compose and normalize
+    candidate = os.path.normpath(os.path.join(base_dir, rel))
+    base_dir_norm = os.path.normpath(base_dir)
+    # Ensure candidate is under base_dir (path-aware)
+    abs_candidate = os.path.abspath(candidate)
+    abs_base = os.path.abspath(base_dir_norm)
+    try:
+        common = os.path.commonpath([abs_candidate, abs_base])
+    except ValueError:
+        # Different drives or invalid path -> unsafe
+        raise ValueError(f"Unsafe path detected: {relative_path}")
+    if common != abs_base:
+        raise ValueError(f"Unsafe path detected: {relative_path}")
+    return candidate
+
+
+def _set_mtime(target_path: str, date_time_tuple):
+    # date_time_tuple: (Y, M, D, H, M, S)
+    d_gettime = "%s/%s/%s %s:%s" % (
+        date_time_tuple[0],
+        date_time_tuple[1],
+        date_time_tuple[2],
+        date_time_tuple[3],
+        date_time_tuple[4],
+    )
+    d_timearry = time.mktime(time.strptime(d_gettime, "%Y/%m/%d %H:%M"))
+    try:
+        os.utime(target_path, (d_timearry, d_timearry))
+    except FileNotFoundError:
+        pass
+
+
+def _try_decode_cp932_from_cp437(name: str) -> Optional[str]:
+    try:
+        raw = name.encode("cp437", "strict")
+        return raw.decode("cp932", "strict")
+    except Exception:
+        return None
+
+
+def unzip_zip_file_to_cache_dir(file_path: str, cache_dir_path: str):
+    print(f"Extracting {file_path} to {cache_dir_path} (zip)")
+    zf = zipfile.ZipFile(file_path)
+    infos = zf.infolist()
+
+    # 先判断是否需要 cp932 解码（仅对非 UTF-8 条目）
+    non_utf8_infos = [i for i in infos if (i.flag_bits & 0x800) == 0]
+    use_cp932 = False
+    for i in non_utf8_infos:
+        sjis = _try_decode_cp932_from_cp437(i.filename)
+        if sjis is None:
+            continue
+        # 粗略判断是否包含常见日文/中日韩字符
+        if any(
+            ("\u3040" <= ch <= "\u30ff")
+            or ("\u3400" <= ch <= "\u9fff")
+            for ch in sjis
+        ):
+            use_cp932 = True
+            break
+
+    # Name 解码函数
+    def decode_name(info: zipfile.ZipInfo) -> str:
+        if (info.flag_bits & 0x800) != 0:
+            return info.filename
+        if use_cp932:
+            sjis = _try_decode_cp932_from_cp437(info.filename)
+            if sjis is not None:
+                return sjis
+        return info.filename
+
+    # 单条目任务：重新打开 zip 以避免多线程共享句柄
+    def extract_one(member_name: str):
+        with zipfile.ZipFile(file_path) as z2:
+            info = next(i for i in z2.infolist() if i.filename == member_name)
+            rel_name = decode_name(info)
+            out_path = _safe_join(cache_dir_path, rel_name)
+            if info.is_dir() or rel_name.endswith("/"):
+                os.makedirs(out_path, exist_ok=True)
+                _set_mtime(out_path, info.date_time)
+                return
+            os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with z2.open(info) as src, open(out_path, "wb") as dst:
+                shutil.copyfileobj(src, dst, length=1024 * 1024)
+            _set_mtime(out_path, info.date_time)
+
+    max_workers = multiprocessing.cpu_count()
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(extract_one, i.filename) for i in infos]
+        for f in as_completed(futures):
+            try:
+                f.result()
+            except Exception as e:
+                print(f" !_! Extract error: {e}")
+    zf.close()
+
+
+def unzip_7z_file_to_cache_dir(file_path: str, cache_dir_path: str):
+    print(f"Extracting {file_path} to {cache_dir_path} (7z)")
+    sevenzip_file = py7zr.SevenZipFile(file_path)
+    sevenzip_file.extractall(cache_dir_path)
+    sevenzip_file.close()
+
+
+def unzip_rar_file_to_cache_dir(file_path: str, cache_dir_path: str):
+    print(f"Extracting {file_path} to {cache_dir_path} (RAR)")
+    rar_file = rarfile.RarFile(file_path)
+    rar_file.extractall(cache_dir_path)
+    rar_file.close()
+
+
 def unzip_file_to_cache_dir(file_path: str, cache_dir_path: str):
     file_name = os.path.split(file_path)[-1]
     if file_path.endswith(".zip"):
-        print(f"Extracting {file_path} to {cache_dir_path} (zip)")
-        zip_file = zipfile.ZipFile(file_path)
-
-        # 解压
-        zip_file.extractall(cache_dir_path)
-
-        # 设置文件信息
-        def set_file_info(file: zipfile.ZipInfo, cache_dir_path: str):
-            # 先获取原文件的时间
-            d_time = file.date_time
-            d_gettime = "%s/%s/%s %s:%s" % (
-                d_time[0],
-                d_time[1],
-                d_time[2],
-                d_time[3],
-                d_time[4],
-            )
-            # 获取解压后文件的绝对路径
-            filep = os.path.join(cache_dir_path, file.filename)
-            d_timearry = time.mktime(time.strptime(d_gettime, "%Y/%m/%d %H:%M"))
-            # 设置解压后的修改时间(这里把修改时间与访问时间设为一样了,windows系统)
-            os.utime(filep, (d_timearry, d_timearry))
-
-        hdd = not file_path.upper().startswith("C:")
-        max_workers = (
-            min(multiprocessing.cpu_count(), 16) if hdd else multiprocessing.cpu_count()
-        )
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # 提交任务
-            futures = [
-                executor.submit(set_file_info, file, cache_dir_path)
-                for file in zip_file.infolist()
-            ]
-            # 等待任务完成
-            for _ in as_completed(futures):
-                pass
-
-        zip_file.close()
+        unzip_zip_file_to_cache_dir(file_path, cache_dir_path)
     elif file_path.endswith(".7z"):
-        print(f"Extracting {file_path} to {cache_dir_path} (7z)")
-        sevenzip_file = py7zr.SevenZipFile(file_path)
-        sevenzip_file.extractall(cache_dir_path)
-        sevenzip_file.close()
+        unzip_7z_file_to_cache_dir(file_path, cache_dir_path)
     elif file_path.endswith(".rar"):
-        print(f"Extracting {file_path} to {cache_dir_path} (RAR)")
-        rar_file = rarfile.RarFile(file_path)
-        rar_file.extractall(cache_dir_path)
-        rar_file.close()
+        unzip_rar_file_to_cache_dir(file_path, cache_dir_path)
     else:
         target_file_path = os.path.join(
             cache_dir_path, "".join(file_name.split(" ")[1:])
