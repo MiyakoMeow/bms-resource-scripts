@@ -1,3 +1,0 @@
-[workspace]
-members = ["be-music-cabinet"]
-resolver = "3"
