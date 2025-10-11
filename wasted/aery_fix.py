@@ -1,13 +1,10 @@
 import os
 
-from fs import (
-    REPLACE_OPTION_UPDATE_PACK,
-    bms_dir_similarity,
-    move_elements_across_dir,
-)
+from fs import bms_dir_similarity
+from fs.move import REPLACE_OPTION_UPDATE_PACK, move_elements_across_dir
 
 
-def main():
+def main() -> None:
     src_dir = input("Input the src dir:")
     if src_dir.startswith('"') and src_dir.endswith('"'):
         src_dir = src_dir[1:-1]

@@ -6,14 +6,14 @@ from bms import get_dir_bms_info
 from options.base import Input, InputType, Option, is_root_dir
 
 
-def check_num_folder(bms_dir: str, max_count: int):
+def check_num_folder(bms_dir: str, max_count: int) -> None:
     for no in range(1, max_count + 1):
         folder_path = os.path.join(bms_dir, str(no))
         if not os.path.isdir(folder_path):
             print(f"{folder_path} is not exist!")
 
 
-def create_num_folders(root_dir: str, folder_count: int):
+def create_num_folders(root_dir: str, folder_count: int) -> None:
     existing_elements = os.listdir(root_dir)
     for element_name in existing_elements:
         path = f"{root_dir}/{element_name}"
@@ -36,7 +36,7 @@ def create_num_folders(root_dir: str, folder_count: int):
             os.mkdir(new_dir_path)
 
 
-def generate_work_info_table(root_dir: str):
+def generate_work_info_table(root_dir: str) -> None:
     print("Set default dir by env BOFTT_DIR")
 
     # 创建一个 workbook

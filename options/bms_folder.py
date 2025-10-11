@@ -9,7 +9,7 @@ from fs.name import get_vaild_fs_name
 from options.base import Input, InputType, Option, is_root_dir
 
 
-def append_artist_name_by_bms(root_dir: str):
+def append_artist_name_by_bms(root_dir: str) -> None:
     """该脚本适用于希望在作品文件夹名后添加“ [艺术家]”的情况。"""
     dir_names: list[str] = [
         dir_name
@@ -72,7 +72,7 @@ def _workdir_append_name_by_bms(work_dir: str) -> bool:
     return True
 
 
-def append_name_by_bms(root_dir: str):
+def append_name_by_bms(root_dir: str) -> None:
     """
     该脚本用于重命名作品文件夹。
     格式：“标题 [艺术家]”
@@ -153,7 +153,7 @@ def _workdir_set_name_by_bms(work_dir: str) -> bool:
     return True
 
 
-def set_name_by_bms(root_dir: str):
+def set_name_by_bms(root_dir: str) -> None:
     """
     该脚本用于重命名作品文件夹。
     格式：“标题 [艺术家]”
@@ -171,7 +171,7 @@ def set_name_by_bms(root_dir: str):
         print(fail_list)
 
 
-def copy_numbered_workdir_names(root_dir_from: str, root_dir_to: str):
+def copy_numbered_workdir_names(root_dir_from: str, root_dir_to: str) -> None:
     """
     该脚本使用于以下情况：
     已经有一个文件夹A，它的子文件夹名为“”等带有编号+小数点的形式。
@@ -201,7 +201,7 @@ def copy_numbered_workdir_names(root_dir_from: str, root_dir_to: str):
             break
 
 
-def scan_folder_similar_folders(root_dir: str, similarity_trigger: float = 0.7):
+def scan_folder_similar_folders(root_dir: str, similarity_trigger: float = 0.7) -> None:
     dir_names: list[str] = [
         dir_name
         for dir_name in os.listdir(root_dir)
@@ -222,7 +222,7 @@ def scan_folder_similar_folders(root_dir: str, similarity_trigger: float = 0.7):
         print(f"发现相似项：{former_dir_name} <=> {dir_name}")
 
 
-def undo_set_name(root_dir: str):
+def undo_set_name(root_dir: str) -> None:
     for dir_name in os.listdir(root_dir):
         dir_path = os.path.join(root_dir, dir_name)
         if not os.path.isdir(dir_path):
@@ -235,7 +235,7 @@ def undo_set_name(root_dir: str):
         shutil.move(dir_path, new_dir_path)
 
 
-def remove_zero_sized_media_files(current_dir: str, print_dir: bool = False):
+def remove_zero_sized_media_files(current_dir: str, print_dir: bool = False) -> None:
     if print_dir:
         print(f"Entering dir: {current_dir}")
 

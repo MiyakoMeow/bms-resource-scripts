@@ -26,13 +26,15 @@ def _safe_join(base_dir: str, relative_path: str) -> str:
         common = os.path.commonpath([abs_candidate, abs_base])
     except ValueError:
         # Different drives or invalid path -> unsafe
-        raise ValueError(f"Unsafe path detected: {relative_path}")
+        raise ValueError(f"Unsafe path detected: {relative_path}") from None
     if common != abs_base:
         raise ValueError(f"Unsafe path detected: {relative_path}")
     return candidate
 
 
-def _set_mtime(target_path: str, date_time_tuple):
+def _set_mtime(
+    target_path: str, date_time_tuple: tuple[int, int, int, int, int, int]
+) -> None:
     # date_time_tuple: (Y, M, D, H, M, S)
     d_gettime = f"{date_time_tuple[0]}/{date_time_tuple[1]}/{date_time_tuple[2]} {date_time_tuple[3]}:{date_time_tuple[4]}"
     d_timearry = time.mktime(time.strptime(d_gettime, "%Y/%m/%d %H:%M"))
@@ -50,7 +52,7 @@ def _try_decode_cp932_from_cp437(name: str) -> str | None:
         return None
 
 
-def unzip_zip_file_to_cache_dir(file_path: str, cache_dir_path: str):
+def unzip_zip_file_to_cache_dir(file_path: str, cache_dir_path: str) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (zip)")
     zf = zipfile.ZipFile(file_path)
     infos = zf.infolist()
@@ -80,7 +82,7 @@ def unzip_zip_file_to_cache_dir(file_path: str, cache_dir_path: str):
         return info.filename
 
     # 单条目任务：重新打开 zip 以避免多线程共享句柄
-    def extract_one(member_name: str):
+    def extract_one(member_name: str) -> None:
         with zipfile.ZipFile(file_path) as z2:
             info = next(i for i in z2.infolist() if i.filename == member_name)
             rel_name = decode_name(info)
@@ -105,21 +107,21 @@ def unzip_zip_file_to_cache_dir(file_path: str, cache_dir_path: str):
     zf.close()
 
 
-def unzip_7z_file_to_cache_dir(file_path: str, cache_dir_path: str):
+def unzip_7z_file_to_cache_dir(file_path: str, cache_dir_path: str) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (7z)")
     sevenzip_file = py7zr.SevenZipFile(file_path)
     sevenzip_file.extractall(cache_dir_path)
     sevenzip_file.close()
 
 
-def unzip_rar_file_to_cache_dir(file_path: str, cache_dir_path: str):
+def unzip_rar_file_to_cache_dir(file_path: str, cache_dir_path: str) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (RAR)")
     rar_file = rarfile.RarFile(file_path)
     rar_file.extractall(cache_dir_path)
     rar_file.close()
 
 
-def unzip_file_to_cache_dir(file_path: str, cache_dir_path: str):
+def unzip_file_to_cache_dir(file_path: str, cache_dir_path: str) -> None:
     file_name = os.path.split(file_path)[-1]
     if file_path.endswith(".zip"):
         unzip_zip_file_to_cache_dir(file_path, cache_dir_path)

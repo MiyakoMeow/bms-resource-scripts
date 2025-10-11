@@ -87,8 +87,8 @@ def parse_bmson_file(file_path: str, encoding: str | None = None) -> BMSInfo:
             return BMSInfo("Error", "Error", "Error")
 
         # Get info
-        def dict_get(dict: dict[Any, Any], *info) -> Any | None:
-            now = dict
+        def dict_get(data: dict[Any, Any], *info: Any) -> Any | None:
+            now: dict[Any, Any] | None = data
             for i in info:
                 if now is not None:
                     now = now.get(i)

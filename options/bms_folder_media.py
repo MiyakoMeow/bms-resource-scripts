@@ -4,7 +4,7 @@ from media.video import VIDEO_PRESETS, bms_folder_transfer_video
 from options.base import Input, InputType, Option, is_root_dir
 
 
-def transfer_audio(root_dir: str):
+def transfer_audio(root_dir: str) -> None:
     print("选择目标格式：")
     for i, preset in enumerate(AUDIO_PRESETS):
         print(f" - {i}: {preset}")
@@ -24,7 +24,7 @@ def transfer_audio(root_dir: str):
     )
 
 
-def transfer_video(root_dir: str):
+def transfer_video(root_dir: str) -> None:
     print("选择目标格式：")
     for i, preset in enumerate(VIDEO_PRESETS):
         print(f" - {i}: {preset}")

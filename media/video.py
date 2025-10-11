@@ -2,7 +2,7 @@ import copy
 import json
 import os
 import subprocess
-from typing import Any
+from typing import Any, cast
 
 """
 Media
@@ -21,7 +21,7 @@ def get_media_file_probe(file_path: str) -> dict[Any, Any]:
         text=True,
     )
     out = result.stdout
-    return json.loads(out)
+    return cast(dict[Any, Any], json.loads(out))
 
 
 """
@@ -39,7 +39,6 @@ class VideoInfo:
 def get_video_info(file_path: str) -> VideoInfo | None:
     probe = get_media_file_probe(file_path)
     for stream in probe["streams"]:
-        stream: dict[Any, Any] = stream
         if stream["codec_type"] != "video":
             continue
         return VideoInfo(
@@ -54,7 +53,6 @@ def get_video_info(file_path: str) -> VideoInfo | None:
 def get_video_size(file_path: str) -> tuple[int, int] | None:
     probe = get_media_file_probe(file_path)
     for stream in probe["streams"]:
-        stream: dict[Any, Any] = stream
         if stream["codec_type"] != "video":
             continue
         return (
@@ -161,8 +159,8 @@ def get_prefered_preset_list(file_path: str) -> list[VideoPreset]:
 
 def process_video_in_dir(
     dir: str,
-    input_exts: list[str] = None,
-    presets: list[VideoPreset] = None,
+    input_exts: list[str] | None = None,
+    presets: list[VideoPreset] | None = None,
     remove_origin_file: bool = True,
     remove_existing_target_file: bool = True,
     use_prefered: bool = False,
@@ -251,12 +249,12 @@ PRESETS: list[tuple[str, VideoPreset]] = [
 
 def bms_folder_transfer_video(
     root_dir: str,
-    input_exts: list[str] = None,
-    presets: list[VideoPreset] = None,
+    input_exts: list[str] | None = None,
+    presets: list[VideoPreset] | None = None,
     remove_origin_file: bool = True,
     remove_existing_target_file: bool = True,
     use_prefered: bool = False,
-):
+) -> None:
     if presets is None:
         presets = []
     if input_exts is None:

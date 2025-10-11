@@ -59,13 +59,16 @@ REPLACE_OPTION_UPDATE_PACK = ReplaceOptions(
     default=ReplaceAction.Replace,
 )
 
+DEFAULT_MOVE_OPTIONS = MoveOptions()
+DEFAULT_REPLACE_OPTIONS = ReplaceOptions()
+
 
 def move_elements_across_dir(
     dir_path_ori: str,
     dir_path_dst: str,
-    options: MoveOptions = MoveOptions(),
-    replace_options: ReplaceOptions = ReplaceOptions(),
-):
+    options: MoveOptions = DEFAULT_MOVE_OPTIONS,
+    replace_options: ReplaceOptions = DEFAULT_REPLACE_OPTIONS,
+) -> None:
     if dir_path_ori == dir_path_dst:
         return
     if not os.path.isdir(dir_path_ori):
@@ -75,7 +78,7 @@ def move_elements_across_dir(
 
     next_folder_paths: list[tuple[str, str]] = []
 
-    def move_action(ori_path: str, dst_path: str):
+    def move_action(ori_path: str, dst_path: str) -> None:
         if options.print_info:
             print(f" - Moving from {ori_path} to {dst_path}")
         # Move
@@ -84,17 +87,17 @@ def move_elements_across_dir(
         elif os.path.isdir(ori_path):
             move_dir(ori_path, dst_path)
 
-    def move_file(ori_path: str, dst_path: str):
+    def move_file(ori_path: str, dst_path: str) -> None:
         # Replace?
         file_ext = os.path.splitext(ori_path)[1]
         if file_ext.startswith("."):
             file_ext = file_ext[1:]
         action = replace_options.ext.get(file_ext) or replace_options.default
 
-        def action_move():
+        def action_move() -> None:
             shutil.move(ori_path, dst_path)
 
-        def action_move_rename():
+        def action_move_rename() -> None:
             # 移动并重命名
             file_name = os.path.split(dst_path)[1]
             for i in range(100):
@@ -128,7 +131,7 @@ def move_elements_across_dir(
                 else:
                     action_move_rename()
 
-    def move_dir(ori_path: str, dst_path: str):
+    def move_dir(ori_path: str, dst_path: str) -> None:
         # Directly move dir
         if not os.path.isdir(dst_path):
             shutil.move(ori_path, dst_path)

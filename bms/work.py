@@ -4,7 +4,7 @@ from collections import defaultdict
 def extract_work_name(
     titles: list[str],
     remove_unclosed_pair: bool = True,
-    remove_tailing_sign_list: list[str] = None,
+    remove_tailing_sign_list: list[str] | None = None,
 ) -> str:
     """
     从多个BMS文件标题中提取共同的作品名（改进版）
@@ -15,7 +15,7 @@ def extract_work_name(
     # 统计所有可能前缀的出现次数
     if remove_tailing_sign_list is None:
         remove_tailing_sign_list = []
-    prefix_counts = defaultdict(int)
+    prefix_counts: defaultdict[str, int] = defaultdict(int)
     for title in titles:
         for i in range(1, len(title) + 1):
             prefix = title[:i]
@@ -49,7 +49,7 @@ def extract_work_name(
 def _extract_work_name_post_process(
     s: str,
     remove_unclosed_pair: bool = True,
-    remove_tailing_sign_list: list[str] = None,
+    remove_tailing_sign_list: list[str] | None = None,
 ) -> str:
     """
     后处理函数：移除未闭合括号及其后续内容

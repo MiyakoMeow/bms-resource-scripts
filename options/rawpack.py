@@ -12,7 +12,7 @@ from options.base import Input, InputType, Option
 
 def unzip_numeric_to_bms_folder(
     pack_dir: str, cache_dir: str, root_dir: str, confirm: bool = False
-):
+) -> None:
     if not os.path.isdir(cache_dir):
         os.mkdir(cache_dir)
     if not os.path.isdir(root_dir):
@@ -89,7 +89,7 @@ def unzip_numeric_to_bms_folder(
 
 def unzip_with_name_to_bms_folder(
     pack_dir: str, cache_dir: str, root_dir: str, confirm: bool = False
-):
+) -> None:
     if not os.path.isdir(cache_dir):
         os.mkdir(cache_dir)
     if not os.path.isdir(root_dir):
@@ -158,7 +158,7 @@ def unzip_with_name_to_bms_folder(
         shutil.move(file_path, os.path.join(used_pack_dir, file_name))
 
 
-def _rename_file_with_num(dir: str, file_name: str, input_num: int):
+def _rename_file_with_num(dir: str, file_name: str, input_num: int) -> None:
     file_path = os.path.join(dir, file_name)
     new_file_name = f"{input_num} {file_name}"
     new_file_path = os.path.join(dir, new_file_name)
@@ -169,10 +169,10 @@ def _rename_file_with_num(dir: str, file_name: str, input_num: int):
 
 def _set_file_num(
     dir: str,
-    allow_ext: list[str] = None,
-    disallow_ext: list[str] = None,
+    allow_ext: list[str] | None = None,
+    disallow_ext: list[str] | None = None,
     allow_others: bool = True,
-):
+) -> None:
     if disallow_ext is None:
         disallow_ext = []
     if allow_ext is None:
@@ -226,7 +226,7 @@ def _set_file_num(
         print()
 
 
-def set_file_num(dir: str):
+def set_file_num(dir: str) -> None:
     while True:
         _set_file_num(
             dir,

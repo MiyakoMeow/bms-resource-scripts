@@ -1,11 +1,10 @@
 import os
 import shutil
-from typing import List, Tuple
 
 from fs.move import is_dir_having_file
 
 
-def remove_empty_folder(parent_dir: str):
+def remove_empty_folder(parent_dir: str) -> None:
     for dir_name in os.listdir(parent_dir):
         dir_path = os.path.join(parent_dir, dir_name)
         if not os.path.isdir(dir_path):
@@ -35,7 +34,7 @@ def bms_dir_similarity(dir_path_a: str, dir_path_b: str) -> float:
         ".png",
     )
 
-    def fetch_dir_elements(dir_path) -> tuple[list[str], list[str], list[str]]:
+    def fetch_dir_elements(dir_path: str) -> tuple[list[str], list[str], list[str]]:
         file_list: list[str] = [name or "" for name in os.listdir(dir_path)]
         media_list: list[str] = [
             os.path.splitext(name)[0] or ""

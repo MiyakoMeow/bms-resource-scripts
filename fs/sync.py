@@ -26,10 +26,10 @@ class SoftSyncPreset:
     def __init__(
         self,
         name: str = "本地文件同步预设",
-        allow_src_exts: list[str] = None,
-        disallow_src_exts: list[str] = None,
+        allow_src_exts: list[str] | None = None,
+        disallow_src_exts: list[str] | None = None,
         allow_other_exts: bool = True,
-        no_activate_ext_bound_pairs: list[tuple[list[str], list[str]]] = None,
+        no_activate_ext_bound_pairs: list[tuple[list[str], list[str]]] | None = None,
         remove_dst_extra_files: bool = True,
         check_file_size: bool = True,
         check_file_mtime: bool = True,
@@ -140,7 +140,7 @@ def sync_folder(
     src_dir: str,
     dst_dir: str,
     preset: SoftSyncPreset,
-):
+) -> None:
     src_list = os.listdir(src_dir)
     dst_list = os.listdir(dst_dir)
 

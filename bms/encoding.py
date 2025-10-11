@@ -87,7 +87,7 @@ class PriorityDecoder:
                         byte_data,
                         position,
                         position + 1,
-                        f"无法用任何编码解码字节: {byte_data[position : position + 1]}",
+                        f"无法用任何编码解码字节: {byte_data[position : position + 1]!r}",
                     )
                 elif errors == "replace":
                     result.append("�")

@@ -39,7 +39,7 @@ def _first_char_rules_find(name: str) -> str:
     return "未分类"
 
 
-def split_folders_with_first_char(root_dir: str):
+def split_folders_with_first_char(root_dir: str) -> None:
     root_folder_name = os.path.split(root_dir)[-1]
     if not os.path.isdir(root_dir):
         print(f"{root_dir} is not a dir! Aborting...")
@@ -60,7 +60,7 @@ def split_folders_with_first_char(root_dir: str):
         shutil.move(element_path, target_path)
 
 
-def undo_split_pack(root_dir: str):
+def undo_split_pack(root_dir: str) -> None:
     if not os.path.isdir(root_dir):
         os.mkdir(root_dir)
     root_folder_name = os.path.split(root_dir)[-1]
@@ -82,7 +82,7 @@ def undo_split_pack(root_dir: str):
         move_elements_across_dir(from_dir, to_dir)
 
 
-def merge_split_folders(root_dir: str):
+def merge_split_folders(root_dir: str) -> None:
     dir_names: list[str] = [
         dir_name
         for dir_name in os.listdir(root_dir)
@@ -126,7 +126,7 @@ def merge_split_folders(root_dir: str):
     # Check dumplate
     last_from_dir_name = ""
     dumplate_list: list[str] = []
-    for target_dir_name, from_dir_name in pairs:
+    for _target_dir_name, from_dir_name in pairs:
         if last_from_dir_name == from_dir_name:
             dumplate_list.append(from_dir_name)
         last_from_dir_name = from_dir_name
@@ -154,7 +154,7 @@ def merge_split_folders(root_dir: str):
         move_elements_across_dir(from_dir_path, target_dir_path)
 
 
-def move_works_in_pack(root_dir_from: str, root_dir_to: str):
+def move_works_in_pack(root_dir_from: str, root_dir_to: str) -> None:
     if root_dir_from == root_dir_to:
         return
     move_count = 0
@@ -186,7 +186,7 @@ def move_works_in_pack(root_dir_from: str, root_dir_to: str):
 
 def _workdir_remove_unneed_media_files(
     work_dir: str, rule: list[tuple[list[str], list[str]]]
-):
+) -> None:
     remove_pairs: list[tuple[str, str]] = []
     removed_files: set[str] = set()
     for file_name in os.listdir(work_dir):
@@ -265,13 +265,13 @@ REMOVE_MEDIA_FILE_RULES: list[list[tuple[list[str], list[str]]]] = [
 
 
 def remove_unneed_media_files(
-    root_dir: str, rule: list[tuple[list[str], list[str]]] = None
-):
+    root_dir: str, rule: list[tuple[list[str], list[str]]] | None = None
+) -> None:
     # Select Preset
     if rule is None:
         rule = []
     if len(rule) == 0:
-        for i, rule in enumerate(REMOVE_MEDIA_FILE_RULES):
+        for i, _rule in enumerate(REMOVE_MEDIA_FILE_RULES):
             print(f"- {i}: {REMOVE_MEDIA_FILE_RULES[i]}")
         selection_str = input("Select Preset (Default: 0):")
         selection = 0
@@ -291,7 +291,7 @@ def remove_unneed_media_files(
         )
 
 
-def move_out_works(target_root_dir: str):
+def move_out_works(target_root_dir: str) -> None:
     for root_dir_name in os.listdir(target_root_dir):
         root_dir_path = os.path.join(target_root_dir, root_dir_name)
         if not os.path.isdir(root_dir_path):
@@ -357,7 +357,7 @@ def move_works_with_same_name(root_dir_from: str, root_dir_to: str) -> None:
                 pairs.append((from_dir_name, from_dir_path, to_dir_name, to_dir_path))
                 break
 
-    for from_dir_name, from_dir_path, to_dir_name, target_path in pairs:
+    for from_dir_name, _from_dir_path, to_dir_name, _target_path in pairs:
         print(f" -> {from_dir_name} => {to_dir_name}")
     selection = input("是否合并？[y/N]")
     if not selection.lower().startswith("y"):

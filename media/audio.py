@@ -158,8 +158,8 @@ def transfer_audio_by_format_in_dir(
 
         # 检查进程状态
         switch_next_list: list[tuple[str, int]] = []
-        for process in processes:
-            (file_path, preset_index), process = process
+        for process_tuple in processes:
+            (file_path, preset_index), process = process_tuple
             # Switch Next?
             switch_next = False
             if process is None:
@@ -256,12 +256,12 @@ MODES: list[tuple[str, list[str], list[AudioPreset]]] = [
 
 def bms_folder_transfer_audio(
     root_dir: str,
-    input_ext: list[str] = None,
-    transfer_mode: list[AudioPreset] = None,
+    input_ext: list[str] | None = None,
+    transfer_mode: list[AudioPreset] | None = None,
     remove_origin_file_when_success: bool = True,
     remove_origin_file_when_failed: bool = True,
     skip_on_fail: bool = False,
-):
+) -> None:
     # Select Modes
     if transfer_mode is None:
         transfer_mode = []

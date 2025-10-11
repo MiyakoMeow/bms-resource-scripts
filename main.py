@@ -32,7 +32,7 @@ def check_exec() -> bool:
     return True
 
 
-def main():
+def main() -> None:
     print("Checking exec...")
     if not check_exec():
         print("Check exec failed. See README.md to install necessary suits.")
@@ -40,12 +40,12 @@ def main():
     print("功能列表如下：")
     for i, option in enumerate(OPTIONS):
         print(f" - {i}: {option.name if option.name else option.func.__name__}")
-    selection = input("输入要启用的功能的下标：").strip()
-    while not selection.isdigit():
+    selection_str = input("输入要启用的功能的下标：").strip()
+    while not selection_str.isdigit():
         print("请重新输入")
-        selection = input("输入要启用的功能的下标：").strip()
+        selection_str = input("输入要启用的功能的下标：").strip()
 
-    selection = int(selection)
+    selection = int(selection_str)
     OPTIONS[selection].exec()
 
 

@@ -25,7 +25,7 @@ from options.bms_folder_bigpack import (
 from options.rawpack import unzip_numeric_to_bms_folder
 
 
-def pack_raw_to_hq(root_dir: str):
+def pack_raw_to_hq(root_dir: str) -> None:
     """This function is for parsing Raw version to HQ version. Just for beatoraja/Qwilight players."""
     # Parse Audio
     print("Parsing Audio... Phase 1: WAV -> FLAC")
@@ -42,7 +42,7 @@ def pack_raw_to_hq(root_dir: str):
     remove_unneed_media_files(root_dir, rule=REMOVE_MEDIA_RULE_ORAJA)
 
 
-def pack_hq_to_lq(root_dir: str):
+def pack_hq_to_lq(root_dir: str) -> None:
     """This file is for parsing HQ version to LQ version. Just for LR2 players."""
     # Parse Audio
     print("Parsing Audio... Phase 1: FLAC -> OGG")
@@ -88,7 +88,7 @@ def _pack_setup_rawpack_to_hq_check(pack_dir: str, root_dir: str) -> bool:
     return True
 
 
-def pack_setup_rawpack_to_hq(pack_dir: str, root_dir: str):
+def pack_setup_rawpack_to_hq(pack_dir: str, root_dir: str) -> None:
     """
     BMS Pack Generator by MiyakoMeow.
     - For Pack Create:
@@ -153,7 +153,7 @@ def _pack_update_rawpack_to_hq_check(
     return True
 
 
-def pack_update_rawpack_to_hq(pack_dir: str, root_dir: str, sync_dir: str):
+def pack_update_rawpack_to_hq(pack_dir: str, root_dir: str, sync_dir: str) -> None:
     """
     BMS Pack Generator by MiyakoMeow.
      - For Pack Update:

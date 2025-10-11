@@ -1,5 +1,4 @@
 import os
-from typing import List, Optional
 
 from bms.encoding import BOFTT_ID_SPECIFIC_ENCODING_TABLE
 from bms.parse import BMSInfo, parse_bms_file, parse_bmson_file
