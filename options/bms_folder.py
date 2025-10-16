@@ -248,7 +248,22 @@ def remove_zero_sized_media_files(current_dir: str, print_dir: bool = False) -> 
     for element_name in os.listdir(current_dir):
         element_path = os.path.join(current_dir, element_name)
         if os.path.isfile(element_path):
-            # print(f" - Found file: {element_name}")
+            # 检查是否为临时文件
+            is_temp_file = element_name.lower() in (
+                "desktop.ini",
+                "thumbs.db",
+                ".ds_store"
+            ) or element_name.startswith((".trash-", "._"))
+
+            if is_temp_file:
+                try:
+                    print(f" - Remove temp file: {element_path}")
+                    os.remove(element_path)
+                except PermissionError:
+                    print(" x PermissionError!")
+                continue
+
+            # 检查是否为大小为0的媒体文件
             if not element_name.endswith(
                 (".ogg", ".wav", ".flac", ".bmp", ".mpg", ".wmv", ".mp4")
             ):
@@ -311,7 +326,7 @@ OPTIONS: list[Option] = [
     ),
     Option(
         remove_zero_sized_media_files,
-        name="BMS根目录：移除大小为0的媒体文件",
+        name="BMS根目录：移除大小为0的媒体文件和临时文件",
         inputs=[Input(InputType.Path, "Root Dir")],
         check_func=is_root_dir,
     ),
