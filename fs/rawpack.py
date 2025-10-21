@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import py7zr
 import rarfile
 
+from bms import CHART_FILE_EXTS
 from fs.move import move_elements_across_dir
 
 
@@ -188,10 +189,23 @@ def move_out_files_in_folder_in_cache_dir(cache_dir_path: str) -> bool:
             done = True
 
         if cache_folder_count > 1:
-            print(
-                f" !_! {cache_dir_path}: has more then 1 folders, please do it manually."
-            )
-            error = True
+            # If there are .bms chart files anywhere in cache_dir, do not error
+            has_bms = False
+            for _root, _dirs, _files in os.walk(cache_dir_path):
+                for _fname in _files:
+                    if _fname.lower().endswith(CHART_FILE_EXTS):
+                        has_bms = True
+                        break
+                if has_bms:
+                    break
+            if has_bms:
+                # Consider this state acceptable and stop further moving
+                done = True
+            else:
+                print(
+                    f" !_! {cache_dir_path}: has more then 1 folders, please do it manually."
+                )
+                error = True
 
         if done or error:
             break
