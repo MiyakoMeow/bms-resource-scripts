@@ -9,6 +9,7 @@ from fs.move import (
     move_elements_across_dir,
 )
 from options.base import Input, InputType, Option, is_not_a_dir, is_root_dir
+from options.bms_folder import remove_zero_sized_media_files
 
 # 日文平假名
 RE_JAPANESE_HIRAGANA = re.compile("[\u3040-\u309f]+")
@@ -236,6 +237,9 @@ def _workdir_remove_unneed_media_files(
             ext_count.update({file_ext: [file_name]})
         else:
             ext_count[file_ext].append(file_name)
+    
+    # Remove zero sized files
+    remove_zero_sized_media_files(work_dir)
 
     # Do With Ext Count
     mp4_count = ext_count.get("mp4")
