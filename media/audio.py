@@ -25,13 +25,9 @@ AUDIO_PRESET_OGG_Q10 = AudioPreset("oggenc", "ogg", "-q10")
 AUDIO_PRESET_OGG_FFMPEG = AudioPreset("ffmpeg", "ogg", "")
 
 AUDIO_PRESET_WAV_FFMPEG = AudioPreset("ffmpeg", "wav", None)
-AUDIO_PRESET_WAV_FROM_FLAC = AudioPreset(
-    "flac", "wav", "-d --keep-foreign-metadata-if-present -f"
-)
+AUDIO_PRESET_WAV_FROM_FLAC = AudioPreset("flac", "wav", "-d --keep-foreign-metadata-if-present -f")
 
-AUDIO_PRESET_FLAC = AudioPreset(
-    "flac", "flac", "--keep-foreign-metadata-if-present --best -f"
-)
+AUDIO_PRESET_FLAC = AudioPreset("flac", "flac", "--keep-foreign-metadata-if-present --best -f")
 AUDIO_PRESET_FLAC_FFMPEG = AudioPreset("ffmpeg", "flac", "")
 
 AUDIO_PRESETS = [
@@ -52,7 +48,10 @@ def _get_audio_precess_cmd(
     # Execute
     arg = preset.arg if preset.arg is not None else ""
     if preset.exec == "ffmpeg":
-        return f'ffmpeg -hide_banner -loglevel panic -i "{file_path}" -f {preset.output_format} -map_metadata 0 {arg} "{output_file_path}"'
+        return (
+            f'ffmpeg -hide_banner -loglevel panic -i "{file_path}" '
+            f'-f {preset.output_format} -map_metadata 0 {arg} "{output_file_path}"'
+        )
     elif preset.exec == "oggenc":
         return f'oggenc {arg} "{file_path}" -o "{output_file_path}"'
     elif preset.exec == "flac":
@@ -92,15 +91,10 @@ def transfer_audio_by_format_in_dir(
         file_path: str, preset_index: int, preset: AudioPreset
     ) -> tuple[tuple[str, int], subprocess.Popen | None]:
         # New cmd
-        output_file_path = (
-            file_path[: -len(file_path.rsplit(".")[-1])] + preset.output_format
-        )
+        output_file_path = file_path[: -len(file_path.rsplit(".")[-1])] + preset.output_format
         # Target File exists?
         if os.path.isfile(output_file_path):
-            if (
-                os.path.getsize(output_file_path) > 0
-                and not remove_existing_target_file
-            ):
+            if os.path.getsize(output_file_path) > 0 and not remove_existing_target_file:
                 print(f" - File {output_file_path} exists! Skipping...")
                 return (file_path, preset_index), None
             else:
@@ -114,9 +108,7 @@ def transfer_audio_by_format_in_dir(
         )
         if len(cmd) == 0:
             return (file_path, preset_index), None
-        process = subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return (file_path, preset_index), process
 
     has_error = False
@@ -126,9 +118,7 @@ def transfer_audio_by_format_in_dir(
 
     # 创建线程池
     hdd = not dir.upper().startswith("C:")
-    max_workers = (
-        min(multiprocessing.cpu_count(), 24) if hdd else multiprocessing.cpu_count()
-    )
+    max_workers = min(multiprocessing.cpu_count(), 24) if hdd else multiprocessing.cpu_count()
 
     # Submit
     processes: list[tuple[tuple[str, int], subprocess.Popen | None]] = []
@@ -228,9 +218,7 @@ def transfer_audio_by_format_in_dir(
     if file_count > 0:
         print(f" -v- Parsed {file_count} file(s).")
     if len(fallback_file_names) > 0:
-        print(
-            f" x_x Fallback: {fallback_file_names}. Totally {len(fallback_file_names)} files."
-        )
+        print(f" x_x Fallback: {fallback_file_names}. Totally {len(fallback_file_names)} files.")
 
     return not has_error
 

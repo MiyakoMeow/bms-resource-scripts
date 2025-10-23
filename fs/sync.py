@@ -114,9 +114,7 @@ SYNC_PRESET_FOR_APPEND = SoftSyncPreset(
     remove_dst_extra_files=False,
     exec=SoftSyncExec.NONE,
 )
-SYNC_PRESET_FLAC = SoftSyncPreset(
-    allow_src_exts=["flac"], allow_other_exts=False, remove_dst_extra_files=False
-)
+SYNC_PRESET_FLAC = SoftSyncPreset(allow_src_exts=["flac"], allow_other_exts=False, remove_dst_extra_files=False)
 SYNC_PRESET_MP4_AVI = SoftSyncPreset(
     allow_src_exts=["mp4", "avi"], allow_other_exts=False, remove_dst_extra_files=False
 )
@@ -233,12 +231,7 @@ def sync_folder(
                         # Set atime/mtime
                         os.utime(dst_path, (src_mtime, src_mtime))
             # Remove same ori files
-            if (
-                preset.remove_src_same_files
-                and dst_file_exists
-                and is_same_file
-                and os.path.isfile(src_path)
-            ):
+            if preset.remove_src_same_files and dst_file_exists and is_same_file and os.path.isfile(src_path):
                 _src_remove_files.append(src_element)
                 os.remove(src_path)
 

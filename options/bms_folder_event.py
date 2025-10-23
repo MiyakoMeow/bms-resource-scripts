@@ -3,7 +3,7 @@ import os
 import openpyxl
 
 from bms import get_dir_bms_info
-from options.base import Input, InputType, Option, is_root_dir
+from options import Input, InputType, Option, is_root_dir
 
 
 def check_num_folder(bms_dir: str, max_count: int) -> None:

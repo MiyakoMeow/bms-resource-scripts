@@ -49,18 +49,12 @@ def parse_bms_file(file_path: str, encoding: str | None = None) -> BMSInfo:
                 value_str = line.replace("#PLAYLEVEL", "").strip()
                 if len(value_str) > 0 and value_str.isdecimal():
                     playlevel_float = float(value_str)
-                    playlevel = (
-                        int(playlevel_float) if 0.0 <= playlevel_float <= 99.0 else -1
-                    )
+                    playlevel = int(playlevel_float) if 0.0 <= playlevel_float <= 99.0 else -1
             elif line.startswith("#DIFFICULTY"):
                 value_str = line.replace("#DIFFICULTY", "").strip()
                 if len(value_str) > 0 and value_str.isdecimal():
                     value = int(float(value_str))
-                    difficulty = (
-                        BMSDifficulty(value)
-                        if 0 <= value <= 5
-                        else BMSDifficulty.Unknown
-                    )
+                    difficulty = BMSDifficulty(value) if 0 <= value <= 5 else BMSDifficulty.Unknown
             elif line.startswith("#BMP"):
                 value_str = line.replace("#BMP", "").strip()
                 ext = os.path.splitext(value_str)[1]

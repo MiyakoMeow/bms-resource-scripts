@@ -1,9 +1,9 @@
 import os
 import shutil
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from enum import Enum
-import threading
 
 
 def is_dir_having_file(dir_path: str) -> bool:
@@ -54,9 +54,7 @@ class ReplaceOptions:
 
 
 REPLACE_OPTION_UPDATE_PACK = ReplaceOptions(
-    ext=dict.fromkeys(
-        ["bms", "bml", "bme", "pms", "txt", "bmson"], ReplaceAction.CheckReplace
-    ),
+    ext=dict.fromkeys(["bms", "bml", "bme", "pms", "txt", "bmson"], ReplaceAction.CheckReplace),
     default=ReplaceAction.Replace,
 )
 
@@ -165,10 +163,7 @@ def move_elements_across_dir(
         for element_name in os.listdir(dir_path_ori)
     ]
     with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as executor:
-        futures = [
-            executor.submit(plan_action, path_ori, path_dst)
-            for path_ori, path_dst in dir_lists
-        ]
+        futures = [executor.submit(plan_action, path_ori, path_dst) for path_ori, path_dst in dir_lists]
         for f in as_completed(futures):
             try:
                 res = f.result()
@@ -196,9 +191,7 @@ def move_elements_across_dir(
         move_elements_across_dir(ori_path, dst_path, options)
 
     # Clean Source
-    if replace_options.default != ReplaceAction.Skip or not is_dir_having_file(
-        dir_path_ori
-    ):
+    if replace_options.default != ReplaceAction.Skip or not is_dir_having_file(dir_path_ori):
         try:
             shutil.rmtree(dir_path_ori)
         except PermissionError:

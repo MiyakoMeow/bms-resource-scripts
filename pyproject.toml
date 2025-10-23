@@ -10,7 +10,7 @@ dependencies = [
 
 [tool.ruff]
 target-version = "py312"
-line-length = 88
+line-length = 120
 
 [tool.ruff.lint]
 select = [
@@ -52,4 +52,5 @@ strict_equality = true
 dev = [
     "ruff>=0.14.0",
     "mypy>=1.8.0",
+    "types-openpyxl>=3.1.5.20250919",
 ]

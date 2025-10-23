@@ -1,7 +1,7 @@
 import webbrowser
 from enum import Enum
 
-from options.base import Option
+from options import Option
 
 
 class BMSEvent(Enum):

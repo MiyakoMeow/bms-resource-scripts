@@ -16,7 +16,7 @@ from media.video import (
     VIDEO_PRESET_WMV2_512X512,
     bms_folder_transfer_video,
 )
-from options.base import Input, InputType, Option
+from options import Input, InputType, Option
 from options.bms_folder import append_name_by_bms, copy_numbered_workdir_names
 from options.bms_folder_bigpack import (
     REMOVE_MEDIA_RULE_ORAJA,
@@ -26,7 +26,10 @@ from options.rawpack import unzip_numeric_to_bms_folder
 
 
 def pack_raw_to_hq(root_dir: str) -> None:
-    """This function is for parsing Raw version to HQ version. Just for beatoraja/Qwilight players."""
+    """
+    This function is for parsing Raw version to HQ version.
+    Just for beatoraja/Qwilight players.
+    """
     # Parse Audio
     print("Parsing Audio... Phase 1: WAV -> FLAC")
     bms_folder_transfer_audio(
@@ -92,8 +95,10 @@ def pack_setup_rawpack_to_hq(pack_dir: str, root_dir: str) -> None:
     """
     BMS Pack Generator by MiyakoMeow.
     - For Pack Create:
-    Fast creating pack script, from: Raw Packs set numed, to: target bms folder.
-    You need to set pack num before running this script, see options/rawpack.py => set_file_num
+    Fast creating pack script, from: Raw Packs set numed,
+    to: target bms folder.
+    You need to set pack num before running this script,
+    see options/rawpack.py => set_file_num
     """
     # Setup
     os.makedirs(root_dir, exist_ok=False)
@@ -124,9 +129,7 @@ def pack_setup_rawpack_to_hq(pack_dir: str, root_dir: str) -> None:
     remove_unneed_media_files(root_dir=root_dir, rule=REMOVE_MEDIA_RULE_ORAJA)
 
 
-def _pack_update_rawpack_to_hq_check(
-    pack_dir: str, root_dir: str, sync_dir: str
-) -> bool:
+def _pack_update_rawpack_to_hq_check(pack_dir: str, root_dir: str, sync_dir: str) -> bool:
     # Input 1
     print(" - Input 1: Pack dir path")
     if not os.path.isdir(pack_dir):
@@ -143,9 +146,7 @@ def _pack_update_rawpack_to_hq_check(
         print("Root dir is an existing dir.")
         return False
     # Input 3
-    print(
-        " - Input 3: Already exists BMS Folder path. (Input a dir path that ALREADY exists)"
-    )
+    print(" - Input 3: Already exists BMS Folder path. (Input a dir path that ALREADY exists)")
     print("This script will use this dir, just for name syncing and file checking.")
     if not os.path.isdir(sync_dir):
         print("Syncing dir is not vaild dir.")
@@ -157,8 +158,10 @@ def pack_update_rawpack_to_hq(pack_dir: str, root_dir: str, sync_dir: str) -> No
     """
     BMS Pack Generator by MiyakoMeow.
      - For Pack Update:
-    Fast update script, from: Raw Packs set numed, to: delta bms folder just for making pack update.
-    You need to set pack num before running this script, see scripts_rawpack/rawpack_set_num.py
+    Fast update script, from: Raw Packs set numed,
+    to: delta bms folder just for making pack update.
+    You need to set pack num before running this script,
+    see scripts_rawpack/rawpack_set_num.py
     """
     # Setup
     os.makedirs(root_dir, exist_ok=False)

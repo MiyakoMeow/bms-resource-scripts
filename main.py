@@ -23,9 +23,7 @@ def check_exec() -> bool:
     cmds = ["flac --version", "ffmpeg -version", "oggenc -v"]
     for cmd in cmds:
         pass
-        run = subprocess.run(
-            cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE
-        )
+        run = subprocess.run(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         if run.returncode != 0:
             print(f'Run "{cmd}" failed.')
             return False
@@ -58,9 +56,7 @@ def main() -> None:
         print(f"\n【{module_name}】")
         for option in module_options:
             option_map[current_number] = option
-            print(
-                f" - {current_number}: {option.name if option.name else option.func.__name__}"
-            )
+            print(f" - {current_number}: {option.name if option.name else option.func.__name__}")
             current_number += 1
         # 跳到下一个十位数的开头
         current_number = ((current_number - 1) // 10 + 1) * 10 + 1

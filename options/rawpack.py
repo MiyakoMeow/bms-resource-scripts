@@ -7,12 +7,10 @@ from fs.rawpack import (
     move_out_files_in_folder_in_cache_dir,
     unzip_file_to_cache_dir,
 )
-from options.base import Input, InputType, Option
+from options import Input, InputType, Option
 
 
-def unzip_numeric_to_bms_folder(
-    pack_dir: str, cache_dir: str, root_dir: str, confirm: bool = False
-) -> None:
+def unzip_numeric_to_bms_folder(pack_dir: str, cache_dir: str, root_dir: str, confirm: bool = False) -> None:
     if not os.path.isdir(cache_dir):
         os.mkdir(cache_dir)
     if not os.path.isdir(root_dir):
@@ -56,10 +54,7 @@ def unzip_numeric_to_bms_folder(
                 continue
             if not (
                 dir_name.startswith(id_str)
-                and (
-                    len(dir_name) == len(id_str)
-                    or dir_name[len(id_str) :].startswith(".")
-                )
+                and (len(dir_name) == len(id_str) or dir_name[len(id_str) :].startswith("."))
             ):
                 continue
             target_dir_path = dir_path
@@ -84,9 +79,7 @@ def unzip_numeric_to_bms_folder(
         shutil.move(file_path, os.path.join(used_pack_dir, file_name))
 
 
-def unzip_with_name_to_bms_folder(
-    pack_dir: str, cache_dir: str, root_dir: str, confirm: bool = False
-) -> None:
+def unzip_with_name_to_bms_folder(pack_dir: str, cache_dir: str, root_dir: str, confirm: bool = False) -> None:
     if not os.path.isdir(cache_dir):
         os.mkdir(cache_dir)
     if not os.path.isdir(root_dir):
@@ -96,11 +89,7 @@ def unzip_with_name_to_bms_folder(
         file_name
         for file_name in os.listdir(pack_dir)
         if os.path.isfile(os.path.join(pack_dir, file_name))
-        and (
-            file_name.endswith(".zip")
-            or file_name.endswith(".7z")
-            or file_name.endswith(".rar")
-        )
+        and (file_name.endswith(".zip") or file_name.endswith(".7z") or file_name.endswith(".rar"))
     ]
 
     if confirm:

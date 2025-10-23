@@ -10,9 +10,7 @@ Media
 
 
 def get_media_file_probe(file_path: str) -> dict[Any, Any]:
-    cmd = (
-        f'ffprobe -show_format -show_streams -print_format json -v quiet "{file_path}"'
-    )
+    cmd = f'ffprobe -show_format -show_streams -print_format json -v quiet "{file_path}"'
     print(f"Exec: {cmd}")
     result = subprocess.run(
         cmd,
@@ -86,44 +84,45 @@ class VideoPreset:
         self.arg = arg
 
     def __str__(self) -> str:
-        return (
-            f"VideoPreset {{ exec: {self.exec}, output_format: {self.output_codec} }}"
-        )
+        return f"VideoPreset {{ exec: {self.exec}, output_format: {self.output_codec} }}"
 
     def __repr__(self) -> str:
         return self.__str__()
 
     def get_output_file_path(self, input_file_path: str) -> str:
-        return (
-            input_file_path[: -len(input_file_path.rsplit(".", 1)[-1])]
-            + self.output_file_ext
-        )
+        return input_file_path[: -len(input_file_path.rsplit(".", 1)[-1])] + self.output_file_ext
 
     def get_video_process_cmd(self, input_file_path: str, output_file_path: str) -> str:
         input_arg = self.input_arg if self.input_arg is not None else ""
         fliter_arg = self.fliter_arg if self.fliter_arg is not None else ""
         inner_arg = "-map_metadata 0" if self.exec == "ffmpeg" else ""
-        return f'{self.exec} {input_arg} "{input_file_path}" {fliter_arg} {inner_arg} -c:v {self.output_codec} {self.arg} "{output_file_path}" '
+        return (
+            f'{self.exec} {input_arg} "{input_file_path}" '
+            f"{fliter_arg} {inner_arg} -c:v {self.output_codec} "
+            f'{self.arg} "{output_file_path}" '
+        )
 
 
-FLITER_512X512 = '-filter_complex "[0:v]scale=512:512:force_original_aspect_ratio=increase,crop=512:512:(ow-iw)/2:(oh-ih)/2,boxblur=20[v1];[0:v]scale=512:512:force_original_aspect_ratio=decrease[v2];[v1][v2]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2[vid]" -map [vid]'
-FLITER_480P = '-filter_complex "[0:v]scale=640:480:force_original_aspect_ratio=increase,crop=640:480:(ow-iw)/2:(oh-ih)/2,boxblur=20[v1];[0:v]scale=640:480:force_original_aspect_ratio=decrease[v2];[v1][v2]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2[vid]" -map [vid]'
-
-VIDEO_PRESET_AVI_512X512 = VideoPreset(
-    "ffmpeg", "-hide_banner -i", FLITER_512X512, "avi", "mpeg4", "-an -q:v 8"
+FLITER_512X512 = (
+    '-filter_complex "[0:v]scale=512:512:force_original_aspect_ratio=increase,'
+    "crop=512:512:(ow-iw)/2:(oh-ih)/2,boxblur=20[v1];[0:v]scale=512:512:"
+    "force_original_aspect_ratio=decrease[v2];[v1][v2]overlay=(main_w-overlay_w)/2:"
+    '(main_h-overlay_h)/2[vid]" -map [vid]'
 )
-VIDEO_PRESET_WMV2_512X512 = VideoPreset(
-    "ffmpeg", "-hide_banner -i", FLITER_512X512, "wmv", "wmv2", "-an -q:v 8"
+FLITER_480P = (
+    '-filter_complex "[0:v]scale=640:480:force_original_aspect_ratio=increase,'
+    "crop=640:480:(ow-iw)/2:(oh-ih)/2,boxblur=20[v1];[0:v]scale=640:480:"
+    "force_original_aspect_ratio=decrease[v2];[v1][v2]overlay=(main_w-overlay_w)/2:"
+    '(main_h-overlay_h)/2[vid]" -map [vid]'
 )
+
+VIDEO_PRESET_AVI_512X512 = VideoPreset("ffmpeg", "-hide_banner -i", FLITER_512X512, "avi", "mpeg4", "-an -q:v 8")
+VIDEO_PRESET_WMV2_512X512 = VideoPreset("ffmpeg", "-hide_banner -i", FLITER_512X512, "wmv", "wmv2", "-an -q:v 8")
 VIDEO_PRESET_MPEG1VIDEO_512X512 = VideoPreset(
     "ffmpeg", "-hide_banner -i", FLITER_512X512, "mpg", "mpeg1video", "-an -b:v 1500k"
 )
-VIDEO_PRESET_AVI_480P = VideoPreset(
-    "ffmpeg", "-hide_banner -i", FLITER_480P, "avi", "mpeg4", "-an -q:v 8"
-)
-VIDEO_PRESET_WMV2_480P = VideoPreset(
-    "ffmpeg", "-hide_banner -i", FLITER_480P, "wmv", "wmv2", "-an -q:v 8"
-)
+VIDEO_PRESET_AVI_480P = VideoPreset("ffmpeg", "-hide_banner -i", FLITER_480P, "avi", "mpeg4", "-an -q:v 8")
+VIDEO_PRESET_WMV2_480P = VideoPreset("ffmpeg", "-hide_banner -i", FLITER_480P, "wmv", "wmv2", "-an -q:v 8")
 VIDEO_PRESET_MPEG1VIDEO_480P = VideoPreset(
     "ffmpeg", "-hide_banner -i", FLITER_480P, "mpg", "mpeg1video", "-an -b:v 1500k"
 )
@@ -262,9 +261,7 @@ def bms_folder_transfer_video(
     if len(presets) == 0:
         for i, (mode_str, mode_args) in enumerate(PRESETS):
             print(f"- {i}: {mode_str} ({mode_args})")
-        selection_str = input(
-            "Select Modes (Type numbers above, split with space, then will exec in order):"
-        )
+        selection_str = input("Select Modes (Type numbers above, split with space, then will exec in order):")
         selections = selection_str.split()
         for selection in selections:
             presets.append(PRESETS[int(selection)][1])

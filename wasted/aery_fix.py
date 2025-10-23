@@ -11,9 +11,7 @@ def main() -> None:
     if not os.path.isdir(src_dir):
         print(f"{src_dir}: not a dir.")
         return
-    dirs = [
-        dir for dir in os.listdir(src_dir) if os.path.isdir(os.path.join(src_dir, dir))
-    ]
+    dirs = [dir for dir in os.listdir(src_dir) if os.path.isdir(os.path.join(src_dir, dir))]
     # 扫描所有带aery的目录
     aery_pair: list[tuple[str, str, float]] = []
     for dir in dirs:
@@ -24,11 +22,7 @@ def main() -> None:
         for i in range(len(dir)):
             # 按长度寻找，排除自身，确认只剩下一个结果
             sub_len = i + 1
-            scan_dirs = [
-                sub_dir
-                for sub_dir in dirs
-                if sub_dir.startswith(dir[:sub_len]) and sub_dir != dir
-            ]
+            scan_dirs = [sub_dir for sub_dir in dirs if sub_dir.startswith(dir[:sub_len]) and sub_dir != dir]
             if len(scan_dirs) != 1:
                 continue
             scan_dir = scan_dirs[0]

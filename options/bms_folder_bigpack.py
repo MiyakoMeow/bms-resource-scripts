@@ -8,7 +8,7 @@ from fs.move import (
     is_dir_having_file,
     move_elements_across_dir,
 )
-from options.base import Input, InputType, Option, is_not_a_dir, is_root_dir
+from options import Input, InputType, Option, is_not_a_dir, is_root_dir
 from options.bms_folder import remove_zero_sized_media_files
 
 # 日文平假名
@@ -71,9 +71,7 @@ def undo_split_pack(root_dir: str) -> None:
     pairs: list[tuple[str, str]] = []
     for folder_name in os.listdir(parent_dir):
         folder_path = os.path.join(parent_dir, folder_name)
-        if folder_name.startswith(f"{root_folder_name} [") and folder_name.endswith(
-            "]"
-        ):
+        if folder_name.startswith(f"{root_folder_name} [") and folder_name.endswith("]"):
             print(f" - {root_dir} <- {folder_path}")
             pairs.append((folder_path, root_dir))
 
@@ -87,9 +85,7 @@ def undo_split_pack(root_dir: str) -> None:
 
 def merge_split_folders(root_dir: str) -> None:
     dir_names: list[str] = [
-        dir_name
-        for dir_name in os.listdir(root_dir)
-        if os.path.isdir(os.path.join(root_dir, dir_name))
+        dir_name for dir_name in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, dir_name))
     ]
 
     pairs: list[tuple[str, str]] = []
@@ -113,14 +109,10 @@ def merge_split_folders(root_dir: str) -> None:
                 continue
             # Check has another folders
             dir_names_with_starter = [
-                dir_name
-                for dir_name in dir_names
-                if dir_name.startswith(f"{dir_name_without_artist} [")
+                dir_name for dir_name in dir_names if dir_name.startswith(f"{dir_name_without_artist} [")
             ]
             if len(dir_names_with_starter) > 2:
-                print(
-                    f" !_! {dir_name_without_artist} have more then 2 folders! {dir_names_with_starter}"
-                )
+                print(f" !_! {dir_name_without_artist} have more then 2 folders! {dir_names_with_starter}")
                 continue
 
             # Append
@@ -187,9 +179,7 @@ def move_works_in_pack(root_dir_from: str, root_dir_to: str) -> None:
     )
 
 
-def _workdir_remove_unneed_media_files(
-    work_dir: str, rule: list[tuple[list[str], list[str]]]
-) -> None:
+def _workdir_remove_unneed_media_files(work_dir: str, rule: list[tuple[list[str], list[str]]]) -> None:
     remove_pairs: list[tuple[str, str]] = []
     removed_files: set[str] = set()
     for file_name in os.listdir(work_dir):
@@ -221,9 +211,7 @@ def _workdir_remove_unneed_media_files(
 
     # Remove file
     for file_path, replacing_file_path in remove_pairs:
-        print(
-            f"- Remove file {os.path.split(replacing_file_path)[-1]}, because {os.path.split(file_path)[-1]} exists."
-        )
+        print(f"- Remove file {os.path.split(replacing_file_path)[-1]}, because {os.path.split(file_path)[-1]} exists.")
         os.remove(replacing_file_path)
 
     # Finished: Count Ext
@@ -270,9 +258,7 @@ REMOVE_MEDIA_FILE_RULES: list[list[tuple[list[str], list[str]]]] = [
 ]
 
 
-def remove_unneed_media_files(
-    root_dir: str, rule: list[tuple[list[str], list[str]]] | None = None
-) -> None:
+def remove_unneed_media_files(root_dir: str, rule: list[tuple[list[str], list[str]]] | None = None) -> None:
     # Select Preset
     if rule is None:
         rule = []
@@ -337,18 +323,10 @@ def move_works_with_same_name(root_dir_from: str, root_dir_to: str) -> None:
         raise ValueError(f"目标路径不存在或不是目录: {root_dir_to}")
 
     # 获取源目录中的所有直接子文件夹
-    from_subdirs: list[str] = [
-        d
-        for d in os.listdir(root_dir_from)
-        if os.path.isdir(os.path.join(root_dir_from, d))
-    ]
+    from_subdirs: list[str] = [d for d in os.listdir(root_dir_from) if os.path.isdir(os.path.join(root_dir_from, d))]
 
     # 获取目标目录中的所有直接子文件夹
-    to_subdirs: list[str] = [
-        d
-        for d in os.listdir(root_dir_to)
-        if os.path.isdir(os.path.join(root_dir_to, d))
-    ]
+    to_subdirs: list[str] = [d for d in os.listdir(root_dir_to) if os.path.isdir(os.path.join(root_dir_to, d))]
 
     pairs: list[tuple[str, str, str, str]] = []
 

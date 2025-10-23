@@ -27,10 +27,7 @@ def input_path() -> str:
         paths = [path for path in paths if len(path) > 0]
         paths = [(path[:-1] if path.endswith("\n") else path) for path in paths]
         paths = [(path[:-1] if path.endswith("\r") else path) for path in paths]
-        paths = [
-            (path[1:-1] if path.startswith('"') and path.endswith('"') else path)
-            for path in paths
-        ]
+        paths = [(path[1:-1] if path.startswith('"') and path.endswith('"') else path) for path in paths]
         paths = [path.lstrip() for path in paths]
 
     # 去重并保持顺序，越往前代表时间越近
@@ -50,9 +47,7 @@ def input_path() -> str:
             print(f"（还有 {len(paths) - 5} 个历史路径，输入？查看全部）")
 
     # 获取用户输入
-    selection_str = input(
-        "直接输入路径，或输入上面的数字（索引）进行选择，输入？查看所有选项："
-    )
+    selection_str = input("直接输入路径，或输入上面的数字（索引）进行选择，输入？查看所有选项：")
 
     # 处理帮助命令
     if selection_str.strip() in ["？", "?"]:
@@ -141,9 +136,7 @@ class Option:
         # Input
         args = []
         for i, input_arg in enumerate(self.inputs):
-            print(
-                f"参数编号： {i + 1}/{len(self.inputs)}, 类型：{input_arg.type}, 描述：{input_arg.description}"
-            )
+            print(f"参数编号： {i + 1}/{len(self.inputs)}, 类型：{input_arg.type}, 描述：{input_arg.description}")
             res = input_arg.exec_input()
             print(f' - 输入："{res}"')
             args.append(res)
@@ -177,8 +170,7 @@ def is_root_dir(*root_dir: str) -> bool:
                 [
                     file
                     for file in os.listdir(dir)
-                    if file.endswith(CHART_FILE_EXTS + MEDIA_FILE_EXTS)
-                    and os.path.isfile(os.path.join(dir, file))
+                    if file.endswith(CHART_FILE_EXTS + MEDIA_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
                 ]
             )
             == 0
@@ -195,8 +187,7 @@ def is_work_dir(*root_dir: str) -> bool:
                 [
                     file
                     for file in os.listdir(dir)
-                    if file.endswith(CHART_FILE_EXTS)
-                    and os.path.isfile(os.path.join(dir, file))
+                    if file.endswith(CHART_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
                 ]
             )
             > 0
@@ -204,8 +195,7 @@ def is_work_dir(*root_dir: str) -> bool:
                 [
                     file
                     for file in os.listdir(dir)
-                    if file.endswith(MEDIA_FILE_EXTS)
-                    and os.path.isfile(os.path.join(dir, file))
+                    if file.endswith(MEDIA_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
                 ]
             )
             > 0

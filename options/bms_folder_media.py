@@ -1,7 +1,7 @@
 from bms import AUDIO_FILE_EXTS, VIDEO_FILE_EXTS
 from media.audio import AUDIO_PRESETS, bms_folder_transfer_audio
 from media.video import VIDEO_PRESETS, bms_folder_transfer_video
-from options.base import Input, InputType, Option, is_root_dir
+from options import Input, InputType, Option, is_root_dir
 
 
 def transfer_audio(root_dir: str) -> None:

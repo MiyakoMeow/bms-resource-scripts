@@ -6,15 +6,13 @@ from bms import BMSInfo, get_dir_bms_info
 from fs import bms_dir_similarity
 from fs.move import REPLACE_OPTION_UPDATE_PACK, move_elements_across_dir
 from fs.name import get_vaild_fs_name
-from options.base import Input, InputType, Option, is_root_dir
+from options import Input, InputType, Option, is_root_dir
 
 
 def append_artist_name_by_bms(root_dir: str) -> None:
     """该脚本适用于希望在作品文件夹名后添加“ [艺术家]”的情况。"""
     dir_names: list[str] = [
-        dir_name
-        for dir_name in os.listdir(root_dir)
-        if os.path.isdir(os.path.join(root_dir, dir_name))
+        dir_name for dir_name in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, dir_name))
     ]
 
     pairs: list[tuple[str, str]] = []
@@ -65,9 +63,7 @@ def _workdir_append_name_by_bms(work_dir: str) -> bool:
     artist = info.artist
 
     # Rename
-    new_dir_path = (
-        f"{work_dir}. {get_vaild_fs_name(title)} [{get_vaild_fs_name(artist)}]"
-    )
+    new_dir_path = f"{work_dir}. {get_vaild_fs_name(title)} [{get_vaild_fs_name(artist)}]"
     shutil.move(work_dir, new_dir_path)
     return True
 
@@ -179,9 +175,7 @@ def copy_numbered_workdir_names(root_dir_from: str, root_dir_to: str) -> None:
     将A中的子文件夹名，同步给B的对应的子文件夹。
     """
     src_dir_names = [
-        dir_name
-        for dir_name in os.listdir(root_dir_from)
-        if os.path.isdir(os.path.join(root_dir_from, dir_name))
+        dir_name for dir_name in os.listdir(root_dir_from) if os.path.isdir(os.path.join(root_dir_from, dir_name))
     ]
     # List Dst Dir
     for dir_name in os.listdir(root_dir_to):
@@ -203,9 +197,7 @@ def copy_numbered_workdir_names(root_dir_from: str, root_dir_to: str) -> None:
 
 def scan_folder_similar_folders(root_dir: str, similarity_trigger: float = 0.7) -> None:
     dir_names: list[str] = [
-        dir_name
-        for dir_name in os.listdir(root_dir)
-        if os.path.isdir(os.path.join(root_dir, dir_name))
+        dir_name for dir_name in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, dir_name))
     ]
     print(f"当前目录下有{len(dir_names)}个文件夹。")
     # Sort
@@ -264,9 +256,7 @@ def remove_zero_sized_media_files(current_dir: str, print_dir: bool = False) -> 
                 continue
 
             # 检查是否为大小为0的媒体文件
-            if not element_name.endswith(
-                (".ogg", ".wav", ".flac", ".bmp", ".mpg", ".wmv", ".mp4")
-            ):
+            if not element_name.endswith((".ogg", ".wav", ".flac", ".bmp", ".mpg", ".wmv", ".mp4")):
                 continue
             if os.path.getsize(element_path) > 0:
                 continue
@@ -280,9 +270,7 @@ def remove_zero_sized_media_files(current_dir: str, print_dir: bool = False) -> 
             next_dir_list.append(element_name)
 
     for next_dir_name in next_dir_list:
-        remove_zero_sized_media_files(
-            current_dir=os.path.join(current_dir, next_dir_name), print_dir=print_dir
-        )
+        remove_zero_sized_media_files(current_dir=os.path.join(current_dir, next_dir_name), print_dir=print_dir)
 
 
 OPTIONS: list[Option] = [

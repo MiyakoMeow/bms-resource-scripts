@@ -32,9 +32,7 @@ class PriorityDecoder:
         # TODO: Impl Final
         self.final = final
 
-    def _decode_byte_sequence(
-        self, byte_data: bytes, start: int = 0
-    ) -> tuple[str | None, int]:
+    def _decode_byte_sequence(self, byte_data: bytes, start: int = 0) -> tuple[str | None, int]:
         """
         尝试用所有编码解码字节序列，返回第一个成功的解码结果和消耗的字节数
 
@@ -82,12 +80,13 @@ class PriorityDecoder:
             else:
                 # 处理解码失败的字节
                 if errors == "strict":
+                    msg = f"无法用任何编码解码字节: {byte_data[position : position + 1]!r}"
                     raise UnicodeDecodeError(
                         "priority_decode",
                         byte_data,
                         position,
                         position + 1,
-                        f"无法用任何编码解码字节: {byte_data[position : position + 1]!r}",
+                        msg,
                     )
                 elif errors == "replace":
                     result.append("�")
@@ -98,9 +97,7 @@ class PriorityDecoder:
         return "".join(result)
 
 
-def read_file_with_priority(
-    file_path: str, encoding_priority: list[str], errors: str = "strict"
-) -> str | None:
+def read_file_with_priority(file_path: str, encoding_priority: list[str], errors: str = "strict") -> str | None:
     """
     读取文件并按照编码优先级逐字符解码
 

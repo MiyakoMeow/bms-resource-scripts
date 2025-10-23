@@ -33,11 +33,11 @@ def _safe_join(base_dir: str, relative_path: str) -> str:
     return candidate
 
 
-def _set_mtime(
-    target_path: str, date_time_tuple: tuple[int, int, int, int, int, int]
-) -> None:
+def _set_mtime(target_path: str, date_time_tuple: tuple[int, int, int, int, int, int]) -> None:
     # date_time_tuple: (Y, M, D, H, M, S)
-    d_gettime = f"{date_time_tuple[0]}/{date_time_tuple[1]}/{date_time_tuple[2]} {date_time_tuple[3]}:{date_time_tuple[4]}"
+    d_gettime = (
+        f"{date_time_tuple[0]}/{date_time_tuple[1]}/{date_time_tuple[2]} {date_time_tuple[3]}:{date_time_tuple[4]}"
+    )
     d_timearry = time.mktime(time.strptime(d_gettime, "%Y/%m/%d %H:%M"))
     try:
         os.utime(target_path, (d_timearry, d_timearry))
@@ -66,9 +66,7 @@ def unzip_zip_file_to_cache_dir(file_path: str, cache_dir_path: str) -> None:
         if sjis is None:
             continue
         # 粗略判断是否包含常见日文/中日韩字符
-        if any(
-            ("\u3040" <= ch <= "\u30ff") or ("\u3400" <= ch <= "\u9fff") for ch in sjis
-        ):
+        if any(("\u3040" <= ch <= "\u30ff") or ("\u3400" <= ch <= "\u9fff") for ch in sjis):
             use_cp932 = True
             break
 
@@ -131,9 +129,7 @@ def unzip_file_to_cache_dir(file_path: str, cache_dir_path: str) -> None:
     elif file_path.endswith(".rar"):
         unzip_rar_file_to_cache_dir(file_path, cache_dir_path)
     else:
-        target_file_path = os.path.join(
-            cache_dir_path, "".join(file_name.split(" ")[1:])
-        )
+        target_file_path = os.path.join(cache_dir_path, "".join(file_name.split(" ")[1:]))
         print(f"Coping {file_path} to {target_file_path}")
         shutil.copy(file_path, target_file_path)
 
@@ -202,9 +198,7 @@ def move_out_files_in_folder_in_cache_dir(cache_dir_path: str) -> bool:
                 # Consider this state acceptable and stop further moving
                 done = True
             else:
-                print(
-                    f" !_! {cache_dir_path}: has more then 1 folders, please do it manually."
-                )
+                print(f" !_! {cache_dir_path}: has more then 1 folders, please do it manually.")
                 error = True
 
         if done or error:
