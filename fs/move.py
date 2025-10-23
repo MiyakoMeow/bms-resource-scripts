@@ -73,8 +73,11 @@ def move_elements_across_dir(
         return
     if not os.path.isdir(dir_path_ori):
         return
+
+    # Dst directory not exist? Move it
     if not os.path.isdir(dir_path_dst):
-        os.mkdir(dir_path_dst)
+        shutil.move(dir_path_ori, dir_path_dst)
+        return
 
     next_folder_paths: list[tuple[str, str]] = []
 
