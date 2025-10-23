@@ -68,9 +68,6 @@ def unzip_numeric_to_bms_folder(
         if target_dir_path is None:
             target_dir_path = os.path.join(root_dir, id_str)
 
-        if not os.path.isdir(target_dir_path):
-            os.mkdir(target_dir_path)
-
         # Move cache to bms dir
         print(f" > Moving files in {cache_dir_path} to {target_dir_path}")
         move_elements_across_dir(cache_dir_path, target_dir_path)
@@ -137,10 +134,6 @@ def unzip_with_name_to_bms_folder(
             continue
 
         target_dir_path = os.path.join(root_dir, file_name_without_ext)
-
-        # Create New Target dir
-        if not os.path.isdir(target_dir_path):
-            os.mkdir(target_dir_path)
 
         # Move cache to bms dir
         print(f" > Moving files in {cache_dir_path} to {target_dir_path}")

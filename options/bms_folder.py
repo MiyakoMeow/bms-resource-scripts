@@ -252,7 +252,7 @@ def remove_zero_sized_media_files(current_dir: str, print_dir: bool = False) -> 
             is_temp_file = element_name.lower() in (
                 "desktop.ini",
                 "thumbs.db",
-                ".ds_store"
+                ".ds_store",
             ) or element_name.startswith((".trash-", "._"))
 
             if is_temp_file:

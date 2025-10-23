@@ -60,10 +60,12 @@ def split_folders_with_first_char(root_dir: str) -> None:
         target_path = os.path.join(target_dir, element_name)
         shutil.move(element_path, target_path)
 
+    # Remove the original folder when possible
+    if not is_dir_having_file(root_dir):
+        os.rmdir(root_dir)
+
 
 def undo_split_pack(root_dir: str) -> None:
-    if not os.path.isdir(root_dir):
-        os.mkdir(root_dir)
     root_folder_name = os.path.split(root_dir)[-1]
     parent_dir = os.path.join(root_dir, "..")
     pairs: list[tuple[str, str]] = []
@@ -237,7 +239,7 @@ def _workdir_remove_unneed_media_files(
             ext_count.update({file_ext: [file_name]})
         else:
             ext_count[file_ext].append(file_name)
-    
+
     # Remove zero sized files
     remove_zero_sized_media_files(work_dir)
 
