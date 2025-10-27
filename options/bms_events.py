@@ -6,12 +6,15 @@ from options import Option
 
 class BMSEvent(Enum):
     BOFTT = 20
+    BOF21 = 21
     LetsBMSEdit3 = 103
 
     def list_url(self) -> str:
         match self:
             case BMSEvent.BOFTT:
                 return "https://manbow.nothing.sh/event/event.cgi?action=sp&event=146"
+            case BMSEvent.BOF21:
+                return "https://manbow.nothing.sh/event/event.cgi?action=sp&event=149"
             case BMSEvent.LetsBMSEdit3:
                 return "https://venue.bmssearch.net/letsbmsedit3"
 
@@ -19,6 +22,8 @@ class BMSEvent(Enum):
         match self:
             case BMSEvent.BOFTT:
                 return f"https://manbow.nothing.sh/event/event.cgi?action=More_def&num={work_num}&event=146"
+            case BMSEvent.BOF21:
+                return f"https://manbow.nothing.sh/event/event.cgi?action=More_def&num={work_num}&event=149"
             case BMSEvent.LetsBMSEdit3:
                 return f"https://venue.bmssearch.net/letsbmsedit3/{work_num}"
 
