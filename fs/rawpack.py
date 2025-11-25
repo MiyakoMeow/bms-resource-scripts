@@ -6,7 +6,7 @@ import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import py7zr
-import rarfile
+import rarfile  # type: ignore[import-untyped]
 
 from bms import CHART_FILE_EXTS
 from fs.move import move_elements_across_dir

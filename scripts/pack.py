@@ -16,7 +16,14 @@ from media.video import (
     VIDEO_PRESET_WMV2_512X512,
     bms_folder_transfer_video,
 )
-from options import Input, InputType, Option
+from options import (
+    Input,
+    InputType,
+    Option,
+    check_ffmpeg_exec,
+    check_flac_exec,
+    check_oggenc_exec,
+)
 from options.bms_folder import append_name_by_bms, copy_numbered_workdir_names
 from options.bms_folder_bigpack import (
     REMOVE_MEDIA_RULE_ORAJA,
@@ -203,11 +210,12 @@ OPTIONS = [
             Input(InputType.Path, "Pack Dir"),
             Input(InputType.Path, "Root Dir"),
         ],
+        check_func=[check_flac_exec, check_ffmpeg_exec],
     ),
     Option(
         func=pack_update_rawpack_to_hq,
         name="大包更新脚本：原包 -> HQ版大包",
-        check_func=_pack_update_rawpack_to_hq_check,
+        check_func=[check_flac_exec, check_ffmpeg_exec, _pack_update_rawpack_to_hq_check],
         inputs=[
             Input(InputType.Path, "Pack Dir"),
             Input(InputType.Path, "Root Dir"),
@@ -220,6 +228,7 @@ OPTIONS = [
         inputs=[
             Input(InputType.Path, "Root Dir"),
         ],
+        check_func=[check_flac_exec, check_ffmpeg_exec],
     ),
     Option(
         func=pack_hq_to_lq,
@@ -227,5 +236,6 @@ OPTIONS = [
         inputs=[
             Input(InputType.Path, "Root Dir"),
         ],
+        check_func=[check_oggenc_exec, check_ffmpeg_exec],
     ),
 ]

@@ -1,4 +1,5 @@
 import os
+import subprocess
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, auto
@@ -220,3 +221,24 @@ def is_work_dir(*root_dir: str) -> bool:
 
 def is_not_a_dir(dir: str) -> bool:
     return not os.path.isdir(dir)
+
+
+# === Exec checks (split by executable) ===
+def _check_exec(cmd: str, name: str) -> bool:
+    run = subprocess.run(cmd, shell=True, stdin=subprocess.PIPE, capture_output=True)
+    if run.returncode != 0:
+        print(f' - 未找到或无法执行 {name}（命令 "{cmd}" 失败）。')
+        return False
+    return True
+
+
+def check_ffmpeg_exec(*_args: Any) -> bool:
+    return _check_exec("ffmpeg -version", "ffmpeg")
+
+
+def check_flac_exec(*_args: Any) -> bool:
+    return _check_exec("flac --version", "flac")
+
+
+def check_oggenc_exec(*_args: Any) -> bool:
+    return _check_exec("oggenc -v", "oggenc")

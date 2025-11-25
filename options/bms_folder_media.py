@@ -1,7 +1,15 @@
 from bms import AUDIO_FILE_EXTS, VIDEO_FILE_EXTS
 from media.audio import AUDIO_PRESETS, bms_folder_transfer_audio
 from media.video import VIDEO_PRESETS, bms_folder_transfer_video
-from options import Input, InputType, Option, is_root_dir
+from options import (
+    Input,
+    InputType,
+    Option,
+    check_ffmpeg_exec,
+    check_flac_exec,
+    check_oggenc_exec,
+    is_root_dir,
+)
 
 
 def transfer_audio(root_dir: str) -> None:
@@ -51,7 +59,7 @@ OPTIONS = [
         inputs=[
             Input(InputType.Path, "Root Dir"),
         ],
-        check_func=is_root_dir,
+        check_func=[is_root_dir, check_ffmpeg_exec, check_flac_exec, check_oggenc_exec],
     ),
     Option(
         func=transfer_audio,
@@ -59,6 +67,6 @@ OPTIONS = [
         inputs=[
             Input(InputType.Path, "Root Dir"),
         ],
-        check_func=is_root_dir,
+        check_func=[is_root_dir, check_ffmpeg_exec],
     ),
 ]
