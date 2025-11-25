@@ -357,6 +357,68 @@ def move_works_with_same_name(root_dir_from: str, root_dir_to: str) -> None:
         )
 
 
+def move_works_with_same_name_to_siblings(root_dir_from: str) -> None:
+    """
+    将源文件夹(dir_from)中的子文件夹合并到同级目录中的对应子文件夹
+
+    规则：
+    1. 对于dir_from中的每个子文件夹A
+    2. 在其父目录下的所有其他同级目录中查找名称包含A的子文件夹B
+    3. 如果找到，将A的内容合并到每个B中
+    4. 递归处理子文件夹内的文件结构
+
+    参数:
+        dir_from (str): 源文件夹路径
+    """
+
+    # 验证输入路径是否存在且为目录
+    if not os.path.isdir(root_dir_from):
+        raise ValueError(f"源路径不存在或不是目录: {root_dir_from}")
+
+    parent_dir = os.path.dirname(root_dir_from)
+    root_base_name = os.path.basename(root_dir_from)
+
+    # 获取源目录中的所有直接子文件夹
+    from_subdirs: list[str] = [d for d in os.listdir(root_dir_from) if os.path.isdir(os.path.join(root_dir_from, d))]
+
+    # 收集合并对： (from_dir_path, target_path)
+    pairs: list[tuple[str, str]] = []
+
+    # 遍历同级目录（排除自身）
+    for sibling_name in os.listdir(parent_dir):
+        sibling_path = os.path.join(parent_dir, sibling_name)
+        if sibling_name == root_base_name or not os.path.isdir(sibling_path):
+            continue
+
+        # 该同级目录中的直接子目录
+        to_subdirs: list[str] = [d for d in os.listdir(sibling_path) if os.path.isdir(os.path.join(sibling_path, d))]
+
+        # 查找匹配并添加合并对
+        for from_dir_name in from_subdirs:
+            from_dir_path = os.path.join(root_dir_from, from_dir_name)
+            for to_dir_name in to_subdirs:
+                if from_dir_name in to_dir_name:
+                    target_path = os.path.join(sibling_path, to_dir_name)
+                    pairs.append((from_dir_path, target_path))
+                    break
+
+    for from_dir_path, target_path in pairs:
+        print(f" -> {os.path.basename(from_dir_path)} => {target_path}")
+
+    selection = input("是否合并到各平级目录？[y/N]")
+    if not selection.lower().startswith("y"):
+        return
+
+    # 将源文件夹内容合并到每个匹配的目标文件夹
+    for from_dir_path, target_path in pairs:
+        print(f"合并: '{from_dir_path}' -> '{target_path}'")
+        move_elements_across_dir(
+            from_dir_path,
+            target_path,
+            replace_options=REPLACE_OPTION_UPDATE_PACK,
+        )
+
+
 OPTIONS: list[Option] = [
     Option(
         split_folders_with_first_char,
@@ -385,6 +447,12 @@ OPTIONS: list[Option] = [
         move_works_with_same_name,
         name="BMS大包目录：将源文件夹(dir_from)中，文件名相似的子文件夹，合并到目标文件夹(dir_to)中的对应子文件夹",
         inputs=[Input(InputType.Path, "From"), Input(InputType.Path, "To")],
+        check_func=is_root_dir,
+    ),
+    Option(
+        move_works_with_same_name_to_siblings,
+        name="BMS大包目录：将该目录中文件名相似的子文件夹，合并到各平级目录中",
+        inputs=[Input(InputType.Path, "Dir")],
         check_func=is_root_dir,
     ),
 ]
