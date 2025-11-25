@@ -164,11 +164,23 @@ class Option:
             case ConfirmType.NoConfirm:
                 pass
             case ConfirmType.DefaultYes:
+                # 在确认前打印当前输入及其描述
+                if len(self.inputs) > 0:
+                    print("确认以下输入：")
+                    for i, input_arg in enumerate(self.inputs):
+                        val = args[i] if i < len(args) else None
+                        print(f" - 参数{i + 1}: {input_arg.description} = {val}")
                 confirm = input("确认？ [Y/n]:")
                 go_pass = len(confirm) == 0 or confirm.lower().startswith("y")
                 if not go_pass:
                     return
             case ConfirmType.DefaultNo:
+                # 在确认前打印当前输入及其描述
+                if len(self.inputs) > 0:
+                    print("确认以下输入：")
+                    for i, input_arg in enumerate(self.inputs):
+                        val = args[i] if i < len(args) else None
+                        print(f" - 参数{i + 1}: {input_arg.description} = {val}")
                 confirm = input("确认？ [y/N]:")
                 go_pass = confirm.lower().startswith("y")
                 if not go_pass:
