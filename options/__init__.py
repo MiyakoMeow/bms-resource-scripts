@@ -128,7 +128,7 @@ class Option:
     func: Callable[..., None]
     name: str = ""
     inputs: list[Input] = field(default_factory=list)
-    check_func: Callable[..., bool] | None = None
+    check_func: Callable[..., bool] | list[Callable[..., bool]] | None = None
     confirm: ConfirmType = ConfirmType.DefaultYes
 
     def exec(self) -> None:
@@ -142,9 +142,22 @@ class Option:
             args.append(res)
         # Check
         if self.check_func is not None:
-            if not self.check_func(*args):
-                print(" - 检查未通过。")
-                return
+            checks: list[Callable[..., bool]] = (
+                self.check_func
+                if isinstance(self.check_func, list)
+                else [self.check_func]
+                if self.check_func is not None
+                else []
+            )
+            for idx, check in enumerate(checks, start=1):
+                try:
+                    passed = check(*args)
+                except Exception as e:
+                    print(f" - 检查 {idx} 异常：{e}")
+                    return
+                if not passed:
+                    print(f" - 检查未通过（第 {idx} 项）。")
+                    return
         # Confirm
         match self.confirm:
             case ConfirmType.NoConfirm:
