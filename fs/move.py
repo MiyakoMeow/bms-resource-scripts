@@ -1,3 +1,4 @@
+import multiprocessing
 import shutil
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -156,9 +157,7 @@ def move_elements_across_dir(
         (ori_path / element_path.name, dst_path / element_path.name) for element_path in ori_path.iterdir()
     ]
 
-    import os
-
-    with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as executor:
+    with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count() or 4) as executor:
         futures = [executor.submit(plan_action, path_ori, path_dst) for path_ori, path_dst in dir_lists]
         for f in as_completed(futures):
             try:
@@ -174,7 +173,7 @@ def move_elements_across_dir(
             print(f" - Moving from {src} to {dst}")
         shutil.move(src, dst)
 
-    with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as executor:
+    with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count() or 4) as executor:
         futures = [executor.submit(_do_move, src, dst) for src, dst in write_ops]
         for f in as_completed(futures):
             try:

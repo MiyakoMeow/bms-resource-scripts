@@ -15,10 +15,10 @@ from fs.move import move_elements_across_dir
 
 def _safe_join(base_dir: Path, relative_path: str) -> Path:
     base_path = base_dir.resolve()
-    # Normalize separators to OS style first
-    rel = relative_path.replace("/", os.sep).replace("\\", os.sep)
+    # Normalize separators to forward slashes first
+    rel = relative_path.replace("\\", "/")
     # Remove drive letters and leading path separators to avoid traversal / drive jump
-    rel = rel.lstrip("/\\")
+    rel = rel.lstrip("/")
     # Compose and normalize
     candidate = (base_path / rel).resolve()
     # Ensure candidate is under base_dir (path-aware)
