@@ -1,23 +1,23 @@
-import os
 import subprocess
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from pathlib import Path
 from typing import Any
 
 from bms import CHART_FILE_EXTS, MEDIA_FILE_EXTS
 
 # 获取当前文件的绝对路径
-_CURRENT_PATH = os.path.abspath(__file__)
+_CURRENT_PATH = Path(__file__).resolve()
 
 # 获取当前文件所在目录
-_CURRENT_DIR = os.path.dirname(_CURRENT_PATH)
+_CURRENT_DIR = _CURRENT_PATH.parent
 
-_LOG_FILE_PATH = os.path.join(_CURRENT_DIR, "history.log")
+_LOG_FILE_PATH = _CURRENT_DIR / "history.log"
 
 
 def input_path() -> str:
-    if not os.path.isfile(_LOG_FILE_PATH):
+    if not _LOG_FILE_PATH.is_file():
         with open(_LOG_FILE_PATH, "w") as f:
             f.write("\n")
 
@@ -191,12 +191,13 @@ class Option:
 
 def is_root_dir(*root_dir: str) -> bool:
     for dir in root_dir:
+        dir_path = Path(dir)
         result = (
             len(
                 [
                     file
-                    for file in os.listdir(dir)
-                    if file.endswith(CHART_FILE_EXTS + MEDIA_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
+                    for file in dir_path.iterdir()
+                    if file.suffix.endswith(tuple(CHART_FILE_EXTS + MEDIA_FILE_EXTS)) and file.is_file()
                 ]
             )
             == 0
@@ -208,21 +209,14 @@ def is_root_dir(*root_dir: str) -> bool:
 
 def is_work_dir(*root_dir: str) -> bool:
     for dir in root_dir:
+        dir_path = Path(dir)
         result = (
             len(
-                [
-                    file
-                    for file in os.listdir(dir)
-                    if file.endswith(CHART_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
-                ]
+                [file for file in dir_path.iterdir() if file.suffix.endswith(tuple(CHART_FILE_EXTS)) and file.is_file()]
             )
             > 0
             and len(
-                [
-                    file
-                    for file in os.listdir(dir)
-                    if file.endswith(MEDIA_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
-                ]
+                [file for file in dir_path.iterdir() if file.suffix.endswith(tuple(MEDIA_FILE_EXTS)) and file.is_file()]
             )
             > 0
         )
@@ -232,7 +226,7 @@ def is_work_dir(*root_dir: str) -> bool:
 
 
 def is_not_a_dir(dir: str) -> bool:
-    return not os.path.isdir(dir)
+    return not Path(dir).is_dir()
 
 
 # === Exec checks (split by executable) ===

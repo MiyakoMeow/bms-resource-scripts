@@ -1,13 +1,13 @@
-import os
 import shutil
+from pathlib import Path
 
 from fs.move import is_dir_having_file
 
 
-def remove_empty_folder(parent_dir: str) -> None:
-    for dir_name in os.listdir(parent_dir):
-        dir_path = os.path.join(parent_dir, dir_name)
-        if not os.path.isdir(dir_path):
+def remove_empty_folder(parent_dir: Path) -> None:
+    parent_path = parent_dir
+    for dir_path in parent_path.iterdir():
+        if not dir_path.is_dir():
             continue
         if not is_dir_having_file(dir_path):
             try:
@@ -17,7 +17,7 @@ def remove_empty_folder(parent_dir: str) -> None:
                 print(" x PermissionError!")
 
 
-def bms_dir_similarity(dir_path_a: str, dir_path_b: str) -> float:
+def bms_dir_similarity(dir_path_a: Path, dir_path_b: Path) -> float:
     """两个文件夹中，非媒体文件文件名的相似度。"""
     # 相似度
     media_ext_list = (
@@ -34,9 +34,9 @@ def bms_dir_similarity(dir_path_a: str, dir_path_b: str) -> float:
         ".png",
     )
 
-    def fetch_dir_elements(dir_path: str) -> tuple[list[str], list[str], list[str]]:
-        file_list: list[str] = [name or "" for name in os.listdir(dir_path)]
-        media_list: list[str] = [os.path.splitext(name)[0] or "" for name in file_list if name.endswith(media_ext_list)]
+    def fetch_dir_elements(dir_path: Path) -> tuple[list[str], list[str], list[str]]:
+        file_list: list[str] = [name.name for name in dir_path.iterdir()]
+        media_list: list[str] = [Path(name).stem for name in file_list if name.endswith(media_ext_list)]
         non_media_list: list[str] = [name for name in file_list if not name.endswith(media_ext_list)]
         return (file_list, media_list, non_media_list)
 

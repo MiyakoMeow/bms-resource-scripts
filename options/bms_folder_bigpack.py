@@ -1,7 +1,7 @@
-import os
 import re
 import shutil
 from collections.abc import Callable
+from pathlib import Path
 
 from fs.move import (
     REPLACE_OPTION_UPDATE_PACK,
@@ -41,39 +41,39 @@ def _first_char_rules_find(name: str) -> str:
 
 
 def split_folders_with_first_char(root_dir: str) -> None:
-    root_folder_name = os.path.split(root_dir)[-1]
-    if not os.path.isdir(root_dir):
+    root_path = Path(root_dir)
+    root_folder_name = root_path.name
+    if not root_path.is_dir():
         print(f"{root_dir} is not a dir! Aborting...")
         return
     if root_dir.endswith("]"):
         print(f"{root_dir} endswith ']'. Aborting...")
         return
-    parent_dir = os.path.join(root_dir, "..")
-    for element_name in os.listdir(root_dir):
-        element_path = os.path.join(root_dir, element_name)
+    parent_dir = root_path.parent
+    for element in root_path.iterdir():
         # Find target dir
-        rule = _first_char_rules_find(element_name)
-        target_dir = os.path.join(parent_dir, f"{root_folder_name} [{rule}]")
-        if not os.path.isdir(target_dir):
-            os.mkdir(target_dir)
+        rule = _first_char_rules_find(element.name)
+        target_dir = parent_dir / f"{root_folder_name} [{rule}]"
+        if not target_dir.is_dir():
+            target_dir.mkdir()
         # Move
-        target_path = os.path.join(target_dir, element_name)
-        shutil.move(element_path, target_path)
+        target_path = target_dir / element.name
+        shutil.move(str(element), str(target_path))
 
     # Remove the original folder when possible
-    if not is_dir_having_file(root_dir):
-        os.rmdir(root_dir)
+    if not is_dir_having_file(root_path):
+        root_path.rmdir()
 
 
 def undo_split_pack(root_dir: str) -> None:
-    root_folder_name = os.path.split(root_dir)[-1]
-    parent_dir = os.path.join(root_dir, "..")
-    pairs: list[tuple[str, str]] = []
-    for folder_name in os.listdir(parent_dir):
-        folder_path = os.path.join(parent_dir, folder_name)
-        if folder_name.startswith(f"{root_folder_name} [") and folder_name.endswith("]"):
-            print(f" - {root_dir} <- {folder_path}")
-            pairs.append((folder_path, root_dir))
+    root_path = Path(root_dir)
+    root_folder_name = root_path.name
+    parent_dir = root_path.parent
+    pairs: list[tuple[Path, Path]] = []
+    for folder in parent_dir.iterdir():
+        if folder.name.startswith(f"{root_folder_name} [") and folder.name.endswith("]"):
+            print(f" - {root_dir} <- {folder}")
+            pairs.append((folder, root_path))
 
     confirm = input("Confirm? [y/N]")
     if not confirm.lower().startswith("y"):
@@ -84,15 +84,14 @@ def undo_split_pack(root_dir: str) -> None:
 
 
 def merge_split_folders(root_dir: str) -> None:
-    dir_names: list[str] = [
-        dir_name for dir_name in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, dir_name))
-    ]
+    root_path = Path(root_dir)
+    dir_names: list[str] = [dir_name.name for dir_name in root_path.iterdir() if dir_name.is_dir()]
 
     pairs: list[tuple[str, str]] = []
 
     for dir_name in dir_names:
-        dir_path = os.path.join(root_dir, dir_name)
-        if not os.path.isdir(dir_path):
+        dir_path = root_path / dir_name
+        if not dir_path.is_dir():
             continue
         # Situation 1: endswith "]"
         if dir_name.endswith("]"):
@@ -104,8 +103,8 @@ def merge_split_folders(root_dir: str) -> None:
             if len(dir_name_without_artist) == 0:
                 continue
             # Check folder
-            dir_path_without_artist = os.path.join(root_dir, dir_name_without_artist)
-            if not os.path.isdir(dir_path_without_artist):
+            dir_path_without_artist = root_path / dir_name_without_artist
+            if not dir_path_without_artist.is_dir():
                 continue
             # Check has another folders
             dir_names_with_starter = [
@@ -143,8 +142,8 @@ def merge_split_folders(root_dir: str) -> None:
         return
 
     for target_dir_name, from_dir_name in pairs:
-        from_dir_path = os.path.join(root_dir, from_dir_name)
-        target_dir_path = os.path.join(root_dir, target_dir_name)
+        from_dir_path = root_path / from_dir_name
+        target_dir_path = root_path / target_dir_name
         print(f" - Moving: {target_dir_name} <- {from_dir_name}")
         move_elements_across_dir(from_dir_path, target_dir_path)
 
@@ -152,15 +151,16 @@ def merge_split_folders(root_dir: str) -> None:
 def move_works_in_pack(root_dir_from: str, root_dir_to: str) -> None:
     if root_dir_from == root_dir_to:
         return
+    root_from_path = Path(root_dir_from)
+    root_to_path = Path(root_dir_to)
     move_count = 0
-    for bms_dir_name in os.listdir(root_dir_from):
-        bms_dir = os.path.join(root_dir_from, bms_dir_name)
-        if not os.path.isdir(bms_dir):
+    for bms_dir in root_from_path.iterdir():
+        if not bms_dir.is_dir():
             continue
 
-        print(f"Moving: {bms_dir_name}")
+        print(f"Moving: {bms_dir.name}")
 
-        dst_bms_dir = os.path.join(root_dir_to, bms_dir_name)
+        dst_bms_dir = root_to_path / bms_dir.name
         move_elements_across_dir(
             bms_dir,
             dst_bms_dir,
@@ -173,60 +173,59 @@ def move_works_in_pack(root_dir_from: str, root_dir_to: str) -> None:
 
     # Deal with song dir
     move_elements_across_dir(
-        root_dir_from,
-        root_dir_to,
+        root_from_path,
+        root_to_path,
         replace_options=REPLACE_OPTION_UPDATE_PACK,
     )
 
 
 def _workdir_remove_unneed_media_files(work_dir: str, rule: list[tuple[list[str], list[str]]]) -> None:
-    remove_pairs: list[tuple[str, str]] = []
-    removed_files: set[str] = set()
-    for file_name in os.listdir(work_dir):
-        file_path = os.path.join(work_dir, file_name)
-        if not os.path.isfile(file_path):
+    work_path = Path(work_dir)
+    remove_pairs: list[tuple[Path, Path]] = []
+    removed_files: set[Path] = set()
+    for file in work_path.iterdir():
+        if not file.is_file():
             continue
 
-        file_ext = file_name.rsplit(".")[-1]
+        file_ext = file.suffix.lstrip(".")
         for upper_exts, lower_exts in rule:
             if file_ext not in upper_exts:
                 continue
             # File is empty?
-            if os.path.getsize(file_path) == 0:
-                print(f" - !x!: File {file_path} is Empty! Skipping...")
+            if file.stat().st_size == 0:
+                print(f" - !x!: File {file} is Empty! Skipping...")
                 continue
             # File is in upper_exts, search for file in lower_exts.
             for lower_ext in lower_exts:
-                replacing_file_path = f"{file_path[: -len(file_ext)] + lower_ext}"
+                replacing_file = file.with_suffix(f".{lower_ext}")
                 # File not exist?
-                if not os.path.isfile(replacing_file_path):
+                if not replacing_file.is_file():
                     continue
-                if replacing_file_path in removed_files:
+                if replacing_file in removed_files:
                     continue
-                remove_pairs.append((file_path, replacing_file_path))
-                removed_files.add(replacing_file_path)
+                remove_pairs.append((file, replacing_file))
+                removed_files.add(replacing_file)
 
     if len(remove_pairs) > 0:
         print(f"Entering: {work_dir}")
 
     # Remove file
     for file_path, replacing_file_path in remove_pairs:
-        print(f"- Remove file {os.path.split(replacing_file_path)[-1]}, because {os.path.split(file_path)[-1]} exists.")
-        os.remove(replacing_file_path)
+        print(f"- Remove file {replacing_file_path.name}, because {file_path.name} exists.")
+        replacing_file_path.unlink()
 
     # Finished: Count Ext
     ext_count: dict[str, list[str]] = {}
-    for file_name in os.listdir(work_dir):
-        file_path = os.path.join(work_dir, file_name)
-        if not os.path.isfile(file_path):
+    for file in work_path.iterdir():
+        if not file.is_file():
             continue
 
         # Count ext
-        file_ext = file_name.rsplit(".")[-1]
+        file_ext = file.suffix.lstrip(".")
         if ext_count.get(file_ext) is None:
-            ext_count.update({file_ext: [file_name]})
+            ext_count.update({file_ext: [file.name]})
         else:
-            ext_count[file_ext].append(file_name)
+            ext_count[file_ext].append(file.name)
 
     # Remove zero sized files
     remove_zero_sized_media_files(work_dir)
@@ -273,32 +272,33 @@ def remove_unneed_media_files(root_dir: str, rule: list[tuple[list[str], list[st
     print(f"Selected: {rule}")
 
     # Do
-    for bms_dir_name in os.listdir(root_dir):
-        bms_dir_path = os.path.join(root_dir, bms_dir_name)
-        if not os.path.isdir(bms_dir_path):
+    root_path = Path(root_dir)
+    for bms_dir in root_path.iterdir():
+        if not bms_dir.is_dir():
             continue
         _workdir_remove_unneed_media_files(
-            bms_dir_path,
+            str(bms_dir),
             rule,
         )
 
 
 def move_out_works(target_root_dir: str) -> None:
-    for root_dir_name in os.listdir(target_root_dir):
-        root_dir_path = os.path.join(target_root_dir, root_dir_name)
-        if not os.path.isdir(root_dir_path):
+    target_root_path = Path(target_root_dir)
+    for root_dir in target_root_path.iterdir():
+        if not root_dir.is_dir():
             continue
-        for work_dir_name in os.listdir(root_dir_path):
-            work_dir_path = os.path.join(root_dir_path, work_dir_name)
-            target_work_dir_path = os.path.join(target_root_dir, work_dir_name)
+        for work_dir in root_dir.iterdir():
+            if not work_dir.is_dir():
+                continue
+            target_work_dir = target_root_path / work_dir.name
             # Deal with song dir
             move_elements_across_dir(
-                work_dir_path,
-                target_work_dir_path,
+                work_dir,
+                target_work_dir,
                 replace_options=REPLACE_OPTION_UPDATE_PACK,
             )
-        if not is_dir_having_file(root_dir_path):
-            os.rmdir(root_dir_path)
+        if not is_dir_having_file(root_dir):
+            root_dir.rmdir()
 
 
 def move_works_with_same_name(root_dir_from: str, root_dir_to: str) -> None:
@@ -316,29 +316,29 @@ def move_works_with_same_name(root_dir_from: str, root_dir_to: str) -> None:
         dir_to (str): 目标文件夹路径
     """
 
+    root_from_path = Path(root_dir_from)
+    root_to_path = Path(root_dir_to)
+
     # 验证输入路径是否存在且为目录
-    if not os.path.isdir(root_dir_from):
+    if not root_from_path.is_dir():
         raise ValueError(f"源路径不存在或不是目录: {root_dir_from}")
-    if not os.path.isdir(root_dir_to):
+    if not root_to_path.is_dir():
         raise ValueError(f"目标路径不存在或不是目录: {root_dir_to}")
 
     # 获取源目录中的所有直接子文件夹
-    from_subdirs: list[str] = [d for d in os.listdir(root_dir_from) if os.path.isdir(os.path.join(root_dir_from, d))]
+    from_subdirs: list[Path] = [d for d in root_from_path.iterdir() if d.is_dir()]
 
     # 获取目标目录中的所有直接子文件夹
-    to_subdirs: list[str] = [d for d in os.listdir(root_dir_to) if os.path.isdir(os.path.join(root_dir_to, d))]
+    to_subdirs: list[Path] = [d for d in root_to_path.iterdir() if d.is_dir()]
 
-    pairs: list[tuple[str, str, str, str]] = []
+    pairs: list[tuple[str, Path, str, Path]] = []
 
     # 遍历源目录的每个子文件夹
-    for from_dir_name in from_subdirs:
-        from_dir_path: str = os.path.join(root_dir_from, from_dir_name)
-
+    for from_dir in from_subdirs:
         # 查找匹配的目标子文件夹（名称包含源文件夹名）
-        for to_dir_name in to_subdirs:
-            if from_dir_name in to_dir_name:
-                to_dir_path: str = os.path.join(root_dir_to, to_dir_name)
-                pairs.append((from_dir_name, from_dir_path, to_dir_name, to_dir_path))
+        for to_dir in to_subdirs:
+            if from_dir.name in to_dir.name:
+                pairs.append((from_dir.name, from_dir, to_dir.name, to_dir))
                 break
 
     for from_dir_name, _from_dir_path, to_dir_name, _target_path in pairs:
@@ -371,39 +371,38 @@ def move_works_with_same_name_to_siblings(root_dir_from: str) -> None:
         dir_from (str): 源文件夹路径
     """
 
+    root_from_path = Path(root_dir_from)
+
     # 验证输入路径是否存在且为目录
-    if not os.path.isdir(root_dir_from):
+    if not root_from_path.is_dir():
         raise ValueError(f"源路径不存在或不是目录: {root_dir_from}")
 
-    parent_dir = os.path.dirname(root_dir_from)
-    root_base_name = os.path.basename(root_dir_from)
+    parent_dir = root_from_path.parent
+    root_base_name = root_from_path.name
 
     # 获取源目录中的所有直接子文件夹
-    from_subdirs: list[str] = [d for d in os.listdir(root_dir_from) if os.path.isdir(os.path.join(root_dir_from, d))]
+    from_subdirs: list[Path] = [d for d in root_from_path.iterdir() if d.is_dir()]
 
     # 收集合并对： (from_dir_path, target_path)
-    pairs: list[tuple[str, str]] = []
+    pairs: list[tuple[Path, Path]] = []
 
     # 遍历同级目录（排除自身）
-    for sibling_name in os.listdir(parent_dir):
-        sibling_path = os.path.join(parent_dir, sibling_name)
-        if sibling_name == root_base_name or not os.path.isdir(sibling_path):
+    for sibling in parent_dir.iterdir():
+        if sibling.name == root_base_name or not sibling.is_dir():
             continue
 
         # 该同级目录中的直接子目录
-        to_subdirs: list[str] = [d for d in os.listdir(sibling_path) if os.path.isdir(os.path.join(sibling_path, d))]
+        to_subdirs: list[Path] = [d for d in sibling.iterdir() if d.is_dir()]
 
         # 查找匹配并添加合并对
-        for from_dir_name in from_subdirs:
-            from_dir_path = os.path.join(root_dir_from, from_dir_name)
-            for to_dir_name in to_subdirs:
-                if from_dir_name in to_dir_name:
-                    target_path = os.path.join(sibling_path, to_dir_name)
-                    pairs.append((from_dir_path, target_path))
+        for from_dir in from_subdirs:
+            for to_dir in to_subdirs:
+                if from_dir.name in to_dir.name:
+                    pairs.append((from_dir, to_dir))
                     break
 
     for from_dir_path, target_path in pairs:
-        print(f" -> {os.path.basename(from_dir_path)} => {target_path}")
+        print(f" -> {from_dir_path.name} => {target_path}")
 
     selection = input("是否合并到各平级目录？[y/N]")
     if not selection.lower().startswith("y"):

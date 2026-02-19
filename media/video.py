@@ -1,7 +1,7 @@
 import copy
 import json
-import os
 import subprocess
+from pathlib import Path
 from typing import Any, cast
 
 """
@@ -89,8 +89,8 @@ class VideoPreset:
     def __repr__(self) -> str:
         return self.__str__()
 
-    def get_output_file_path(self, input_file_path: str) -> str:
-        return input_file_path[: -len(input_file_path.rsplit(".", 1)[-1])] + self.output_file_ext
+    def get_output_file_path(self, input_file_path: Path) -> Path:
+        return input_file_path.with_suffix("." + self.output_file_ext)
 
     def get_video_process_cmd(self, input_file_path: str, output_file_path: str) -> str:
         input_arg = self.input_arg if self.input_arg is not None else ""
@@ -157,7 +157,7 @@ def get_prefered_preset_list(file_path: str) -> list[VideoPreset]:
 
 
 def process_video_in_dir(
-    dir: str,
+    dir: Path,
     input_exts: list[str] | None = None,
     presets: list[VideoPreset] | None = None,
     remove_origin_file: bool = True,
@@ -173,30 +173,28 @@ def process_video_in_dir(
     if input_exts is None:
         input_exts = ["mp4", "avi"]
     has_error = False
-    file_name_list: list[str] = []
-    for file_name in os.listdir(dir):
-        file_path = os.path.join(dir, file_name)
-        if not os.path.isfile(file_path):
+    file_path_list: list[Path] = []
+    for file_path in dir.iterdir():
+        if not file_path.is_file():
             continue
         # Check ext
         ext_checked = False
         for ext in input_exts:
-            if file_name.lower().endswith("." + ext):
+            if file_path.suffix.lower() == "." + ext:
                 ext_checked = True
         if not ext_checked:
             continue
         # Add File
-        file_name_list.append(file_name)
+        file_path_list.append(file_path)
 
-    if len(file_name_list) > 0:
+    if len(file_path_list) > 0:
         print("Entering dir:", dir)
 
-    for file_name in file_name_list:
-        file_path = os.path.join(dir, file_name)
+    for file_path in file_path_list:
         # Get prefered
         presets_for_file = copy.deepcopy(presets)
         if use_prefered:
-            presets_new = get_prefered_preset_list(file_path)
+            presets_new = get_prefered_preset_list(str(file_path))
             presets_new.extend(presets_for_file)
             presets_for_file = presets_new
         # Check With Presets:
@@ -205,19 +203,19 @@ def process_video_in_dir(
             if file_path == output_file_path:
                 # This file is the preset's output.
                 break
-            if os.path.isfile(output_file_path):
+            if output_file_path.is_file():
                 if remove_existing_target_file:
-                    os.remove(output_file_path)
+                    output_file_path.unlink()
                 else:
                     print(f"File exists: {output_file_path}")
                     continue
             # Process
-            cmd = preset.get_video_process_cmd(file_path, output_file_path)
+            cmd = preset.get_video_process_cmd(str(file_path), str(output_file_path))
             print(f"Processing Video: {file_path} Preset: {preset}")
             result = subprocess.run(cmd, shell=True, capture_output=True)
             if result.returncode != 0:
-                if os.path.isfile(output_file_path):
-                    os.remove(output_file_path)
+                if output_file_path.is_file():
+                    output_file_path.unlink()
                 if preset is presets[-1]:
                     print("Has Error!")
                     print("Cmd: ", cmd)
@@ -228,8 +226,8 @@ def process_video_in_dir(
                 continue
 
             # Normal End: Success
-            if remove_origin_file and os.path.isfile(file_path):
-                os.remove(file_path)
+            if remove_origin_file and file_path.is_file():
+                file_path.unlink()
             # No need to exec next ctrl.
             break
 
@@ -266,9 +264,8 @@ def bms_folder_transfer_video(
         for selection in selections:
             presets.append(PRESETS[int(selection)][1])
 
-    for bms_dir_name in os.listdir(root_dir):
-        bms_dir_path = os.path.join(root_dir, bms_dir_name)
-        if not os.path.isdir(bms_dir_path):
+    for bms_dir_path in Path(root_dir).iterdir():
+        if not bms_dir_path.is_dir():
             continue
 
         is_success = process_video_in_dir(

@@ -1,7 +1,7 @@
 import json
-import os
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Any
 
 from bms.encoding import get_bms_file_str
@@ -26,7 +26,7 @@ class BMSInfo:
     bmp_formats: list[str] = field(default_factory=list)
 
 
-def parse_bms_file(file_path: str, encoding: str | None = None) -> BMSInfo:
+def parse_bms_file(file_path: Path, encoding: str | None = None) -> BMSInfo:
     title = ""
     artist = ""
     genre = ""
@@ -57,14 +57,14 @@ def parse_bms_file(file_path: str, encoding: str | None = None) -> BMSInfo:
                     difficulty = BMSDifficulty(value) if 0 <= value <= 5 else BMSDifficulty.Unknown
             elif line.startswith("#BMP"):
                 value_str = line.replace("#BMP", "").strip()
-                ext = os.path.splitext(value_str)[1]
-                if ext is not None:
+                ext = Path(value_str).suffix
+                if ext:
                     ext_list.append(ext)
 
     return BMSInfo(title, artist, genre, difficulty, playlevel, ext_list)
 
 
-def parse_bmson_file(file_path: str, encoding: str | None = None) -> BMSInfo:
+def parse_bmson_file(file_path: Path, encoding: str | None = None) -> BMSInfo:
     title = ""
     artist = ""
     genre = ""
@@ -97,8 +97,8 @@ def parse_bmson_file(file_path: str, encoding: str | None = None) -> BMSInfo:
         if bga_headers is not None:
             for bga_header in bga_headers:
                 file_name = bga_header["name"]
-                ext = os.path.splitext(file_name)[1]
-                if ext is not None:
+                ext = Path(file_name).suffix
+                if ext:
                     ext_list.append(ext)
 
     return BMSInfo(title, artist, genre, difficulty, playlevel, ext_list)

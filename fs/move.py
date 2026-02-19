@@ -1,18 +1,17 @@
-import os
 import shutil
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 
 
-def is_dir_having_file(dir_path: str) -> bool:
+def is_dir_having_file(dir_path: Path) -> bool:
     has_file = False
-    for element_name in os.listdir(dir_path):
-        element_path = os.path.join(dir_path, element_name)
-        if os.path.isfile(element_path) and os.path.getsize(element_path) > 0:
+    for element_path in dir_path.iterdir():
+        if element_path.is_file() and element_path.stat().st_size > 0:
             has_file = True
-        elif os.path.isdir(element_path):
+        elif element_path.is_dir():
             has_file = has_file or is_dir_having_file(element_path)
 
         if has_file:
@@ -21,17 +20,15 @@ def is_dir_having_file(dir_path: str) -> bool:
     return has_file
 
 
-def is_same_content(file_a: str, file_b: str) -> bool:
-    if not os.path.isfile(file_a):
+def is_same_content(file_a: Path, file_b: Path) -> bool:
+    if not file_a.is_file():
         return False
-    if not os.path.isfile(file_b):
+    if not file_b.is_file():
         return False
-    fa = open(file_a, "rb")
-    ca: bytes = fa.read()
-    fa.close()
-    fb = open(file_b, "rb")
-    cb: bytes = fb.read()
-    fb.close()
+    with open(file_a, "rb") as fa:
+        ca: bytes = fa.read()
+    with open(file_b, "rb") as fb:
+        cb: bytes = fb.read()
     return ca == cb
 
 
@@ -63,105 +60,104 @@ DEFAULT_REPLACE_OPTIONS = ReplaceOptions()
 
 
 def move_elements_across_dir(
-    dir_path_ori: str,
-    dir_path_dst: str,
+    dir_path_ori: Path,
+    dir_path_dst: Path,
     options: MoveOptions = DEFAULT_MOVE_OPTIONS,
     replace_options: ReplaceOptions = DEFAULT_REPLACE_OPTIONS,
 ) -> None:
-    if dir_path_ori == dir_path_dst:
+    ori_path = dir_path_ori
+    dst_path = dir_path_dst
+
+    if ori_path.resolve() == dst_path.resolve():
         return
-    if not os.path.isdir(dir_path_ori):
+    if not ori_path.is_dir():
         return
 
     # Dst directory not exist? Move it
-    if not os.path.isdir(dir_path_dst):
-        shutil.move(dir_path_ori, dir_path_dst)
+    if not dst_path.is_dir():
+        shutil.move(ori_path, dst_path)
         return
 
-    next_folder_paths: list[tuple[str, str]] = []
-    write_ops: list[tuple[str, str]] = []
-    reserved_paths: set[str] = set()
+    next_folder_paths: list[tuple[Path, Path]] = []
+    write_ops: list[tuple[Path, Path]] = []
+    reserved_paths: set[Path] = set()
     reserve_lock = threading.Lock()
 
-    def plan_move_file(ori_path: str, dst_path: str) -> tuple[str, str] | None:
+    def plan_move_file(ori_item: Path, dst_item: Path) -> tuple[Path, Path] | None:
         # Replace?
-        file_ext = os.path.splitext(ori_path)[1]
-        if file_ext.startswith("."):
-            file_ext = file_ext[1:]
+        file_ext = ori_item.suffix.lstrip(".")
         action = replace_options.ext.get(file_ext) or replace_options.default
 
-        def plan_move() -> tuple[str, str]:
-            return (ori_path, dst_path)
+        def plan_move() -> tuple[Path, Path]:
+            return (ori_item, dst_item)
 
-        def plan_move_rename() -> tuple[str, str] | None:
+        def plan_move_rename() -> tuple[Path, Path] | None:
             # 计划重命名后的移动，不实际写入
-            file_name = os.path.split(dst_path)[1]
+            file_name = dst_item.name
             for i in range(100):
-                name, ext = os.path.splitext(file_name)
-                if ext.startswith("."):
-                    ext = ext[1:]
+                name = Path(file_name).stem
+                ext = Path(file_name).suffix.lstrip(".")
                 new_file_name = f"{name}.{i}.{ext}"
-                new_dst_path = os.path.join(dir_path_dst, new_file_name)
+                new_dst_path = dst_path / new_file_name
                 # 并发下使用预占位避免冲突
                 with reserve_lock:
                     if new_dst_path in reserved_paths:
                         continue
-                    if os.path.isfile(new_dst_path):
-                        if is_same_content(ori_path, new_dst_path):
+                    if new_dst_path.is_file():
+                        if is_same_content(ori_item, new_dst_path):
                             # 已存在且内容相同：无需移动
                             return None
                         # 存在但内容不同，尝试下一个序号
                         continue
                     reserved_paths.add(new_dst_path)
-                return (ori_path, new_dst_path)
+                return (ori_item, new_dst_path)
             return None
 
         match action:
             case ReplaceAction.Replace:
                 return plan_move()
             case ReplaceAction.Skip:
-                if os.path.isfile(dst_path):
+                if dst_item.is_file():
                     return None
                 return plan_move()
             case ReplaceAction.Rename:
                 return plan_move_rename()
             case ReplaceAction.CheckReplace:
-                if not os.path.isfile(dst_path):
+                if not dst_item.is_file():
                     return plan_move()
-                elif is_same_content(ori_path, dst_path):
+                elif is_same_content(ori_item, dst_item):
                     # 内容相同？仍计划移动以统一位置
                     return plan_move()
                 else:
                     return plan_move_rename()
 
-    def plan_move_dir(ori_path: str, dst_path: str) -> tuple[str, str] | None:
+    def plan_move_dir(ori_item: Path, dst_item: Path) -> tuple[Path, Path] | None:
         # 目录：若目标不存在则计划整体移动，否则递归后续
-        if not os.path.isdir(dst_path):
-            return (ori_path, dst_path)
+        if not dst_item.is_dir():
+            return (ori_item, dst_item)
         else:
-            next_folder_paths.append((ori_path, dst_path))
+            next_folder_paths.append((ori_item, dst_item))
             return None
 
-    def plan_action(ori_path: str, dst_path: str) -> tuple[str, str] | None:
-        if os.path.isfile(ori_path):
-            return plan_move_file(ori_path, dst_path)
-        elif os.path.isdir(ori_path):
-            return plan_move_dir(ori_path, dst_path)
+    def plan_action(ori_item: Path, dst_item: Path) -> tuple[Path, Path] | None:
+        if ori_item.is_file():
+            return plan_move_file(ori_item, dst_item)
+        elif ori_item.is_dir():
+            return plan_move_dir(ori_item, dst_item)
         return None
 
     # Check Dst Dir
-    if os.path.isdir(dir_path_ori) and not os.path.isdir(dir_path_dst):
-        shutil.move(dir_path_ori, dir_path_dst)
+    if ori_path.is_dir() and not dst_path.is_dir():
+        shutil.move(ori_path, dst_path)
         return
 
     # 第一阶段：仅执行读操作与规划
-    dir_lists: list[tuple[str, str]] = [
-        (
-            os.path.join(dir_path_ori, element_name),
-            os.path.join(dir_path_dst, element_name),
-        )
-        for element_name in os.listdir(dir_path_ori)
+    dir_lists: list[tuple[Path, Path]] = [
+        (ori_path / element_path.name, dst_path / element_path.name) for element_path in ori_path.iterdir()
     ]
+
+    import os
+
     with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as executor:
         futures = [executor.submit(plan_action, path_ori, path_dst) for path_ori, path_dst in dir_lists]
         for f in as_completed(futures):
@@ -173,7 +169,7 @@ def move_elements_across_dir(
                 print(f" !_! Move plan error: {e}")
 
     # 第二阶段：等待读操作完成后，统一执行写操作（批量并发）
-    def _do_move(src: str, dst: str) -> None:
+    def _do_move(src: Path, dst: Path) -> None:
         if options.print_info:
             print(f" - Moving from {src} to {dst}")
         shutil.move(src, dst)
@@ -187,12 +183,12 @@ def move_elements_across_dir(
                 print(f" !_! Move error: {e}")
 
     # Next Level
-    for ori_path, dst_path in next_folder_paths:
-        move_elements_across_dir(ori_path, dst_path, options)
+    for ori_subpath, dst_subpath in next_folder_paths:
+        move_elements_across_dir(ori_subpath, dst_subpath, options)
 
     # Clean Source
-    if replace_options.default != ReplaceAction.Skip or not is_dir_having_file(dir_path_ori):
+    if replace_options.default != ReplaceAction.Skip or not is_dir_having_file(ori_path):
         try:
-            shutil.rmtree(dir_path_ori)
+            shutil.rmtree(ori_path)
         except PermissionError:
-            print(f" x PermissionError! ({dir_path_ori})")
+            print(f" x PermissionError! ({ori_path})")

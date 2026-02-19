@@ -2,6 +2,7 @@ import hashlib
 import os
 import shutil
 from enum import Enum
+from pathlib import Path
 
 
 class SoftSyncExec(Enum):
@@ -91,9 +92,8 @@ class SoftSyncPreset:
         return ret
 
 
-def get_file_sha512(file_path: str) -> str:
-    if not os.path.isfile(file_path):
-        # print(f"{file_path}：文件不存在。")
+def get_file_sha512(file_path: Path) -> str:
+    if not file_path.is_file():
         return ""
     h = hashlib.sha512()
     with open(file_path, "rb") as f:
@@ -135,12 +135,15 @@ SYNC_PRESETS: list[SoftSyncPreset] = [
 
 
 def sync_folder(
-    src_dir: str,
-    dst_dir: str,
+    src_dir: Path,
+    dst_dir: Path,
     preset: SoftSyncPreset,
 ) -> None:
-    src_list = os.listdir(src_dir)
-    dst_list = os.listdir(dst_dir)
+    src_path = src_dir
+    dst_path = dst_dir
+
+    src_list = list(src_path.iterdir())
+    dst_list = list(dst_path.iterdir())
 
     # Cache For Print
     _src_copy_files: list[str] = []
@@ -151,28 +154,27 @@ def sync_folder(
 
     # Src: Copy or Move or Remove
     for src_element in src_list:
-        src_path = os.path.join(src_dir, src_element)
-        dst_path = os.path.join(dst_dir, src_element)
-        if os.path.isdir(src_path):
+        dst_element_path = dst_path / src_element.name
+        if src_element.is_dir():
             # Src: Dir
-            if os.path.isdir(dst_path):
+            if dst_element_path.is_dir():
                 sync_folder(
-                    src_path,
-                    dst_path,
+                    src_element,
+                    dst_element_path,
                     preset,
                 )
             else:
-                os.mkdir(dst_path)
+                dst_element_path.mkdir(parents=True, exist_ok=True)
                 sync_folder(
-                    src_path,
-                    dst_path,
+                    src_element,
+                    dst_element_path,
                     preset,
                 )
-        elif os.path.isfile(src_path):
+        elif src_element.is_file():
             # Src: File
             # Check Ext
             ext_check_passed = preset.allow_other_exts
-            ext = src_element.rsplit(".")[-1]
+            ext = src_element.suffix.lstrip(".")
             if ext in preset.allow_src_exts:
                 ext_check_passed = True
             if ext in preset.disallow_src_exts:
@@ -189,8 +191,8 @@ def sync_folder(
                     continue
                 # Found: Bound From
                 for ext_bound_to in ext_bound_to_list:
-                    bound_file_path = dst_path[: -len(ext)] + ext_bound_to
-                    if not os.path.isfile(bound_file_path):
+                    bound_file_path = dst_element_path.parent / (dst_element_path.stem + "." + ext_bound_to)
+                    if not bound_file_path.is_file():
                         continue
                     # Found: Bound To
                     ext_in_bound = True
@@ -200,57 +202,56 @@ def sync_folder(
             if ext_in_bound:
                 continue
             # Replace: Check
-            dst_file_exists = os.path.isfile(dst_path)
+            dst_file_exists = dst_element_path.is_file()
             is_same_file = dst_file_exists
             if preset.check_file_size and is_same_file and dst_file_exists:
-                src_size = os.path.getsize(src_path)
-                dst_size = os.path.getsize(dst_path)
+                src_size = src_element.stat().st_size
+                dst_size = dst_element_path.stat().st_size
                 is_same_file = is_same_file and src_size == dst_size
             if preset.check_file_mtime and is_same_file and dst_file_exists:
-                src_mtime = os.path.getmtime(src_path)
-                dst_mtime = os.path.getmtime(dst_path)
+                src_mtime = src_element.stat().st_mtime
+                dst_mtime = dst_element_path.stat().st_mtime
                 is_same_file = is_same_file and src_mtime == dst_mtime
             if preset.check_file_sha512 and is_same_file and dst_file_exists:
-                src_value = get_file_sha512(src_path)
-                dst_value = get_file_sha512(dst_path)
+                src_value = get_file_sha512(src_element)
+                dst_value = get_file_sha512(dst_element_path)
                 is_same_file = is_same_file and src_value == dst_value
             # Replace: Exec
             if not dst_file_exists or not is_same_file:
-                src_mtime = os.path.getmtime(src_path)
+                src_mtime = src_element.stat().st_mtime
                 match preset.exec:
                     case SoftSyncExec.NONE:
                         pass
                     case SoftSyncExec.COPY:
-                        _src_copy_files.append(src_element)
-                        shutil.copy(src_path, dst_path)
+                        _src_copy_files.append(src_element.name)
+                        shutil.copy(src_element, dst_element_path)
                         # Set atime/mtime
-                        os.utime(dst_path, (src_mtime, src_mtime))
+                        os.utime(dst_element_path, (src_mtime, src_mtime))
                     case SoftSyncExec.MOVE:
-                        _src_move_files.append(src_element)
-                        shutil.move(src_path, dst_path)
+                        _src_move_files.append(src_element.name)
+                        shutil.move(src_element, dst_element_path)
                         # Set atime/mtime
-                        os.utime(dst_path, (src_mtime, src_mtime))
+                        os.utime(dst_element_path, (src_mtime, src_mtime))
             # Remove same ori files
-            if preset.remove_src_same_files and dst_file_exists and is_same_file and os.path.isfile(src_path):
-                _src_remove_files.append(src_element)
-                os.remove(src_path)
+            if preset.remove_src_same_files and dst_file_exists and is_same_file and src_element.is_file():
+                _src_remove_files.append(src_element.name)
+                src_element.unlink()
 
     # Dst: Remove
     for dst_element in dst_list:
         if not preset.remove_dst_extra_files:
             break
-        src_path = os.path.join(src_dir, dst_element)
-        dst_path = os.path.join(dst_dir, dst_element)
-        if os.path.isdir(dst_path):
-            if os.path.isdir(src_path):
+        src_element_path = src_path / dst_element.name
+        if dst_element.is_dir():
+            if src_element_path.is_dir():
                 pass
             else:
-                _dst_remove_dirs.append(dst_element)
-                shutil.rmtree(dst_path)
-        elif os.path.isfile(dst_path):
-            if not os.path.isfile(src_path):
-                _dst_remove_files.append(dst_element)
-                os.remove(dst_path)
+                _dst_remove_dirs.append(dst_element.name)
+                shutil.rmtree(dst_element)
+        elif dst_element.is_file():
+            if not src_element_path.is_file():
+                _dst_remove_files.append(dst_element.name)
+                dst_element.unlink()
 
     # Print
     if (
@@ -260,7 +261,7 @@ def sync_folder(
         or len(_dst_remove_files) > 0
         or len(_dst_remove_dirs) > 0
     ):
-        print(f"{src_dir} -> {dst_dir}:")
+        print(f"{src_path} -> {dst_path}:")
         if len(_src_copy_files) > 0:
             print(f"Src copy: {_src_copy_files}")
         if len(_src_move_files) > 0:

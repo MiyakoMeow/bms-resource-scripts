@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from fs import remove_empty_folder
 from fs.move import is_dir_having_file
@@ -82,17 +82,17 @@ def pack_hq_to_lq(root_dir: str) -> None:
 def _pack_setup_rawpack_to_hq_check(pack_dir: str, root_dir: str) -> bool:
     # Input 1
     print(" - Input 1: Pack dir path")
-    if not os.path.isdir(pack_dir):
+    if not Path(pack_dir).is_dir():
         print("Pack dir is not vaild dir.")
         return False
     # Print Packs
-    file_id_names = get_num_set_file_names(pack_dir)
+    file_id_names = get_num_set_file_names(Path(pack_dir))
     print(" -- There are packs in pack_dir:")
     for file_name in file_id_names:
         print(f" > {file_name}")
     # Input 2
     print(" - Input 2: BMS Cache Folder path. (Input a dir path that NOT exists)")
-    if os.path.isdir(root_dir):
+    if Path(root_dir).is_dir():
         print("Root dir is an existing dir.")
         return False
     return True
@@ -108,17 +108,17 @@ def pack_setup_rawpack_to_hq(pack_dir: str, root_dir: str) -> None:
     see options/rawpack.py => set_file_num
     """
     # Setup
-    os.makedirs(root_dir, exist_ok=False)
+    Path(root_dir).mkdir(parents=True, exist_ok=False)
     # Unzip
     print(f" > 1. Unzip packs from {pack_dir} to {root_dir}")
-    cache_dir = os.path.join(root_dir, "CacheDir")
+    cache_dir = Path(root_dir) / "CacheDir"
     unzip_numeric_to_bms_folder(
         root_dir=root_dir,
         pack_dir=pack_dir,
-        cache_dir=cache_dir,
+        cache_dir=str(cache_dir),
     )
     if not is_dir_having_file(cache_dir):
-        os.rmdir(cache_dir)
+        cache_dir.rmdir()
     # Syncing folder name
     print(" > 2. Setting dir names from BMS Files")
     append_name_by_bms(root_dir=root_dir)
@@ -139,23 +139,23 @@ def pack_setup_rawpack_to_hq(pack_dir: str, root_dir: str) -> None:
 def _pack_update_rawpack_to_hq_check(pack_dir: str, root_dir: str, sync_dir: str) -> bool:
     # Input 1
     print(" - Input 1: Pack dir path")
-    if not os.path.isdir(pack_dir):
+    if not Path(pack_dir).is_dir():
         print("Pack dir is not vaild dir.")
         return False
     # Print Packs
-    file_id_names = get_num_set_file_names(pack_dir)
+    file_id_names = get_num_set_file_names(Path(pack_dir))
     print(" -- There are packs in pack_dir:")
     for file_name in file_id_names:
         print(f" > {file_name}")
     # Input 2
     print(" - Input 2: BMS Cache Folder path. (Input a dir path that NOT exists)")
-    if os.path.isdir(root_dir):
+    if Path(root_dir).is_dir():
         print("Root dir is an existing dir.")
         return False
     # Input 3
     print(" - Input 3: Already exists BMS Folder path. (Input a dir path that ALREADY exists)")
     print("This script will use this dir, just for name syncing and file checking.")
-    if not os.path.isdir(sync_dir):
+    if not Path(sync_dir).is_dir():
         print("Syncing dir is not vaild dir.")
         return False
     return True
@@ -171,13 +171,13 @@ def pack_update_rawpack_to_hq(pack_dir: str, root_dir: str, sync_dir: str) -> No
     see scripts_rawpack/rawpack_set_num.py
     """
     # Setup
-    os.makedirs(root_dir, exist_ok=False)
+    Path(root_dir).mkdir(parents=True, exist_ok=False)
     # Unzip
     print(f" > 1. Unzip packs from {pack_dir} to {root_dir}")
     unzip_numeric_to_bms_folder(
         root_dir=root_dir,
         pack_dir=pack_dir,
-        cache_dir=os.path.join(root_dir, "CacheDir"),
+        cache_dir=str(Path(root_dir) / "CacheDir"),
     )
     # Syncing folder name
     print(f" > 2. Syncing dir name from {sync_dir} to {root_dir}")
@@ -196,10 +196,10 @@ def pack_update_rawpack_to_hq(pack_dir: str, root_dir: str, sync_dir: str) -> No
     remove_unneed_media_files(root_dir=root_dir, rule=REMOVE_MEDIA_RULE_ORAJA)
     # Soft syncing
     print(f" > 5. Syncing dir files from {sync_dir} to {root_dir}")
-    sync_folder(src_dir=root_dir, dst_dir=sync_dir, preset=SYNC_PRESET_FOR_APPEND)
+    sync_folder(src_dir=Path(root_dir), dst_dir=Path(sync_dir), preset=SYNC_PRESET_FOR_APPEND)
     # Remove Empty folder
     print(f" > 6. Remove empty folder in {root_dir}")
-    remove_empty_folder(parent_dir=root_dir)
+    remove_empty_folder(parent_dir=Path(root_dir))
 
 
 OPTIONS = [
