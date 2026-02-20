@@ -174,7 +174,7 @@ def copy_numbered_workdir_names(root_dir_from: Path, root_dir_to: Path) -> None:
     for dir_name in [p.name for p in root_dir_to.iterdir()]:
         dir_path = root_dir_to / dir_name
         # Get Num
-        dir_num = dir_path.stem.split(" ")[0]
+        dir_num = dir_path.name.split(" ")[0].split(".")[0]
         if not dir_num.isdigit():
             continue
         # Search src name
@@ -224,7 +224,7 @@ def remove_zero_sized_media_files(current_dir: Path, print_dir: bool = False) ->
 
     if not current_dir.is_dir():
         print("Not a vaild dir! Aborting...")
-        pass
+        return
 
     next_dir_list: list[str] = []
 

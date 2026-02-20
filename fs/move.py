@@ -58,6 +58,13 @@ DEFAULT_MOVE_OPTIONS = MoveOptions()
 DEFAULT_REPLACE_OPTIONS = ReplaceOptions()
 
 
+def _safe_cpu_count() -> int:
+    try:
+        return multiprocessing.cpu_count()
+    except NotImplementedError:
+        return 4
+
+
 def move_elements_across_dir(
     dir_path_ori: Path,
     dir_path_dst: Path,
@@ -158,7 +165,7 @@ def move_elements_across_dir(
         )
         for element_name in [p.name for p in dir_path_ori.iterdir()]
     ]
-    with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count() or 4) as executor:
+    with ThreadPoolExecutor(max_workers=_safe_cpu_count()) as executor:
         futures = [executor.submit(plan_action, path_ori, path_dst) for path_ori, path_dst in dir_lists]
         for f in as_completed(futures):
             try:
@@ -174,7 +181,7 @@ def move_elements_across_dir(
             print(f" - Moving from {src} to {dst}")
         shutil.move(src, dst)
 
-    with ThreadPoolExecutor(max_workers=multiprocessing.cpu_count() or 4) as executor:
+    with ThreadPoolExecutor(max_workers=_safe_cpu_count()) as executor:
         futures = [executor.submit(_do_move, src, dst) for src, dst in write_ops]
         for f in as_completed(futures):
             try:

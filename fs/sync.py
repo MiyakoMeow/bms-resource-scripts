@@ -1,4 +1,5 @@
 import hashlib
+import os
 import shutil
 from enum import Enum
 from pathlib import Path
@@ -189,7 +190,8 @@ def sync_folder(
                     continue
                 # Found: Bound From
                 for ext_bound_to in ext_bound_to_list:
-                    bound_file_path = dst_path.with_suffix(ext_bound_to)
+                    normalized_suffix = ext_bound_to if ext_bound_to.startswith(".") else f".{ext_bound_to}"
+                    bound_file_path = dst_path.with_suffix(normalized_suffix)
                     if not bound_file_path.is_file():
                         continue
                     # Found: Bound To
@@ -224,12 +226,12 @@ def sync_folder(
                         _src_copy_files.append(src_element)
                         shutil.copy(src_path, dst_path)
                         # Set atime/mtime
-                        dst_path.utime((src_mtime, src_mtime))  # type: ignore[attr-defined]
+                        os.utime(dst_path, (src_mtime, src_mtime))
                     case SoftSyncExec.MOVE:
                         _src_move_files.append(src_element)
                         shutil.move(src_path, dst_path)
                         # Set atime/mtime
-                        dst_path.utime((src_mtime, src_mtime))  # type: ignore[attr-defined]
+                        os.utime(dst_path, (src_mtime, src_mtime))
             # Remove same ori files
             if preset.remove_src_same_files and dst_file_exists and is_same_file and src_path.is_file():
                 _src_remove_files.append(src_element)

@@ -14,11 +14,7 @@ def check_num_folder(bms_dir: Path, max_count: int) -> None:
 
 
 def create_num_folders(root_dir: Path, folder_count: int) -> None:
-    existing_elements = [p.name for p in root_dir.iterdir()]
-    for element_name in existing_elements:
-        path = root_dir / element_name
-        if not path.is_dir():
-            existing_elements.remove(element_name)
+    existing_elements = [p.name for p in root_dir.iterdir() if p.is_dir()]
 
     for id in range(1, folder_count + 1):
         new_dir_name = f"{id}"

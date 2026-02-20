@@ -1,4 +1,5 @@
 import multiprocessing
+import os
 import shutil
 import time
 import zipfile
@@ -22,7 +23,7 @@ def _safe_join(base_dir: Path, relative_path: Path) -> Path:
     base_dir_norm = base_dir.resolve()
     # Ensure candidate is under base_dir (path-aware)
     try:
-        if not str(candidate).startswith(str(base_dir_norm)):
+        if not candidate.is_relative_to(base_dir_norm):
             raise ValueError(f"Unsafe path detected: {relative_path}")
         if not candidate.exists():
             return candidate
@@ -40,7 +41,7 @@ def _set_mtime(target_path: Path, date_time_tuple: tuple[int, int, int, int, int
     )
     d_timearry = time.mktime(time.strptime(d_gettime, "%Y/%m/%d %H:%M"))
     try:
-        target_path.utime((d_timearry, d_timearry))  # type: ignore[attr-defined]
+        os.utime(target_path, (d_timearry, d_timearry))
     except FileNotFoundError:
         pass
 
