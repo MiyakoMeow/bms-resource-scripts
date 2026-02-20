@@ -43,7 +43,7 @@ def _set_mtime(target_path: Path, date_time_tuple: tuple[int, int, int, int, int
     )
     d_timearry = time.mktime(time.strptime(d_gettime, "%Y/%m/%d %H:%M"))
     try:
-        os.utime(str(target_path), (d_timearry, d_timearry))
+        os.utime(target_path, (d_timearry, d_timearry))
     except FileNotFoundError:
         pass
 
@@ -134,7 +134,7 @@ def unzip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
     else:
         target_file_path = cache_dir_path / "".join(file_name.split(" ")[1:])
         print(f"Coping {file_path} to {target_file_path}")
-        shutil.copy(str(file_path), str(target_file_path))
+        shutil.copy(file_path, target_file_path)
 
 
 def get_num_set_file_names(pack_dir: Path) -> list[str]:
@@ -167,7 +167,7 @@ def move_out_files_in_folder_in_cache_dir(cache_dir_path: Path) -> bool:
             if cache_path.is_dir():
                 # Remove __MACOSX dir
                 if cache_name == "__MACOSX":
-                    shutil.rmtree(str(cache_path))
+                    shutil.rmtree(cache_path)
                     continue
                 # Normal dir
                 cache_folder_count += 1
@@ -213,7 +213,8 @@ def move_out_files_in_folder_in_cache_dir(cache_dir_path: Path) -> bool:
             inner_inner_dir_path = inner_dir_path / inner_dir_name
             if inner_inner_dir_path.is_dir():
                 print(f" - Renaming inner inner dir name: {inner_inner_dir_path}")
-                shutil.move(str(inner_inner_dir_path), str(inner_inner_dir_path) + "-rep")
+                new_path = inner_inner_dir_path.with_name(inner_inner_dir_path.name + "-rep")
+                shutil.move(inner_inner_dir_path, new_path)
             # Move
             print(f" - Moving inner files in {inner_dir_path} to {cache_dir_path}")
             move_elements_across_dir(inner_dir_path, cache_dir_path)

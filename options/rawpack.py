@@ -33,7 +33,7 @@ def unzip_numeric_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Path,
         cache_dir_path = cache_dir / id_str
 
         if cache_dir_path.is_dir() and is_dir_having_file(cache_dir_path):
-            shutil.rmtree(str(cache_dir_path))
+            shutil.rmtree(cache_dir_path)
 
         if not cache_dir_path.is_dir():
             cache_dir_path.mkdir()
@@ -76,7 +76,7 @@ def unzip_numeric_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Path,
         used_pack_dir = pack_dir / "BOFTTPacks"
         if not used_pack_dir.is_dir():
             used_pack_dir.mkdir()
-        shutil.move(str(file_path), str(used_pack_dir / file_name))
+        shutil.move(file_path, used_pack_dir / file_name)
 
 
 def unzip_with_name_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Path, confirm: bool = False) -> None:
@@ -109,7 +109,7 @@ def unzip_with_name_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Pat
         cache_dir_path = cache_dir / file_name_without_ext
 
         if cache_dir_path.is_dir() and is_dir_having_file(cache_dir_path):
-            shutil.rmtree(str(cache_dir_path))
+            shutil.rmtree(cache_dir_path)
 
         if not cache_dir_path.is_dir():
             cache_dir_path.mkdir()
@@ -137,14 +137,14 @@ def unzip_with_name_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Pat
         used_pack_dir = pack_dir / "BOFTTPacks"
         if not used_pack_dir.is_dir():
             used_pack_dir.mkdir()
-        shutil.move(str(file_path), str(used_pack_dir / file_name))
+        shutil.move(file_path, used_pack_dir / file_name)
 
 
 def _rename_file_with_num(dir: Path, file_name: str, input_num: int) -> None:
     file_path = dir / file_name
     new_file_name = f"{input_num} {file_name}"
     new_file_path = dir / new_file_name
-    shutil.move(str(file_path), str(new_file_path))
+    shutil.move(file_path, new_file_path)
     print(f"Rename {file_name} to {new_file_name}.")
     print()
 

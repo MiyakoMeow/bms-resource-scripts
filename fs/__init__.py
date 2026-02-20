@@ -11,7 +11,7 @@ def remove_empty_folder(parent_dir: Path) -> None:
         if not is_dir_having_file(dir_path):
             try:
                 print(f"Remove empty dir: {dir_path}")
-                shutil.rmtree(str(dir_path))
+                shutil.rmtree(dir_path)
             except PermissionError:
                 print(" x PermissionError!")
 

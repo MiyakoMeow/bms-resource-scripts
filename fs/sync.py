@@ -223,14 +223,14 @@ def sync_folder(
                         pass
                     case SoftSyncExec.COPY:
                         _src_copy_files.append(src_element)
-                        shutil.copy(str(src_path), str(dst_path))
+                        shutil.copy(src_path, dst_path)
                         # Set atime/mtime
-                        os.utime(str(dst_path), (src_mtime, src_mtime))
+                        os.utime(dst_path, (src_mtime, src_mtime))
                     case SoftSyncExec.MOVE:
                         _src_move_files.append(src_element)
-                        shutil.move(str(src_path), str(dst_path))
+                        shutil.move(src_path, dst_path)
                         # Set atime/mtime
-                        os.utime(str(dst_path), (src_mtime, src_mtime))
+                        os.utime(dst_path, (src_mtime, src_mtime))
             # Remove same ori files
             if preset.remove_src_same_files and dst_file_exists and is_same_file and src_path.is_file():
                 _src_remove_files.append(src_element)
@@ -247,7 +247,7 @@ def sync_folder(
                 pass
             else:
                 _dst_remove_dirs.append(dst_element)
-                shutil.rmtree(str(dst_path))
+                shutil.rmtree(dst_path)
         elif dst_path.is_file():
             if not src_path.is_file():
                 _dst_remove_files.append(dst_element)

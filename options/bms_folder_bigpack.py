@@ -59,7 +59,7 @@ def split_folders_with_first_char(root_dir: Path) -> None:
             target_dir.mkdir()
         # Move
         target_path = target_dir / element_name
-        shutil.move(str(element_path), str(target_path))
+        shutil.move(element_path, target_path)
 
     # Remove the original folder when possible
     if not is_dir_having_file(root_dir):
@@ -196,7 +196,7 @@ def _workdir_remove_unneed_media_files(work_dir: Path, rule: list[tuple[list[str
                 continue
             # File is in upper_exts, search for file in lower_exts.
             for lower_ext in lower_exts:
-                replacing_file_path = Path(f"{str(check_file_path)[: -len(file_ext)] + lower_ext}")
+                replacing_file_path = check_file_path.with_suffix(f".{lower_ext}")
                 # File not exist?
                 if not replacing_file_path.is_file():
                     continue

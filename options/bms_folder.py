@@ -38,7 +38,7 @@ def append_artist_name_by_bms(root_dir: Path) -> None:
     for from_dir_name, target_dir_name in pairs:
         from_dir_path = root_dir / from_dir_name
         target_dir_path = root_dir / target_dir_name
-        shutil.move(str(from_dir_path), str(target_dir_path))
+        shutil.move(from_dir_path, target_dir_path)
 
 
 def _workdir_append_name_by_bms(work_dir: Path) -> bool:
@@ -62,7 +62,7 @@ def _workdir_append_name_by_bms(work_dir: Path) -> bool:
 
     # Rename
     new_dir_path = work_dir.parent / f"{work_dir.name}. {get_vaild_fs_name(title)} [{get_vaild_fs_name(artist)}]"
-    shutil.move(str(work_dir), str(new_dir_path))
+    shutil.move(work_dir, new_dir_path)
     return True
 
 
@@ -125,7 +125,7 @@ def _workdir_set_name_by_bms(work_dir: Path) -> bool:
     print(f"{work_dir}: Rename! Title: {info.title}; Artist: {info.artist}")
     if not new_dir_path.is_dir():
         # Move Directly
-        shutil.move(str(work_dir), str(new_dir_path))
+        shutil.move(work_dir, new_dir_path)
         return True
 
     # Same dir?
@@ -184,7 +184,7 @@ def copy_numbered_workdir_names(root_dir_from: Path, root_dir_to: Path) -> None:
             # Rename
             target_dir_path = root_dir_to / src_name
             print(f"Rename {dir_name} to {src_name}")
-            shutil.move(str(dir_path), str(target_dir_path))
+            shutil.move(dir_path, target_dir_path)
             break
 
 
@@ -215,7 +215,7 @@ def undo_set_name(root_dir: Path) -> None:
         if dir_name == new_dir_name:
             continue
         print(f"Rename {dir_name} to {new_dir_name}")
-        shutil.move(str(dir_path), str(new_dir_path))
+        shutil.move(dir_path, new_dir_path)
 
 
 def remove_zero_sized_media_files(current_dir: Path, print_dir: bool = False) -> None:

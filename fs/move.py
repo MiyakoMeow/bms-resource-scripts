@@ -71,7 +71,7 @@ def move_elements_across_dir(
 
     # Dst directory not exist? Move it
     if not dir_path_dst.is_dir():
-        shutil.move(str(dir_path_ori), str(dir_path_dst))
+        shutil.move(dir_path_ori, dir_path_dst)
         return
 
     next_folder_paths: list[tuple[Path, Path]] = []
@@ -147,7 +147,7 @@ def move_elements_across_dir(
 
     # Check Dst Dir
     if dir_path_ori.is_dir() and not dir_path_dst.is_dir():
-        shutil.move(str(dir_path_ori), str(dir_path_dst))
+        shutil.move(dir_path_ori, dir_path_dst)
         return
 
     # 第一阶段：仅执行读操作与规划
@@ -172,7 +172,7 @@ def move_elements_across_dir(
     def _do_move(src: Path, dst: Path) -> None:
         if options.print_info:
             print(f" - Moving from {src} to {dst}")
-        shutil.move(str(src), str(dst))
+        shutil.move(src, dst)
 
     with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as executor:
         futures = [executor.submit(_do_move, src, dst) for src, dst in write_ops]
@@ -189,6 +189,6 @@ def move_elements_across_dir(
     # Clean Source
     if replace_options.default != ReplaceAction.Skip or not is_dir_having_file(dir_path_ori):
         try:
-            shutil.rmtree(str(dir_path_ori))
+            shutil.rmtree(dir_path_ori)
         except PermissionError:
             print(f" x PermissionError! ({dir_path_ori})")
