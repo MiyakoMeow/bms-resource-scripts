@@ -10,7 +10,7 @@ Media
 
 
 def get_media_file_probe(file_path: Path) -> dict[Any, Any]:
-    # Convert Path to str for shell command (external subprocess requires str)
+    # 外部库 subprocess 要求字符串路径用于 shell 命令，需要显式转换
     file_path_str = str(file_path)
     cmd = f'ffprobe -show_format -show_streams -print_format json -v quiet "{file_path_str}"'
     print(f"Exec: {cmd}")
@@ -95,7 +95,7 @@ class VideoPreset:
         return input_file_path.parent / (input_file_path.stem + "." + self.output_file_ext)
 
     def get_video_process_cmd(self, input_file_path: Path, output_file_path: Path) -> str:
-        # Convert Path to str for shell command (external subprocess requires str)
+        # 外部库 subprocess 要求字符串路径用于 shell 命令，需要显式转换
         input_file_path_str = str(input_file_path)
         output_file_path_str = str(output_file_path)
         input_arg = self.input_arg if self.input_arg is not None else ""

@@ -65,7 +65,7 @@ def generate_work_info_table(root_dir: Path) -> None:
     # 保存 Excel 文件
     table_path = root_dir / "bms_list.xlsx"
     print(f"Saving table to {table_path}")
-    # openpyxl.Workbook.save requires str path, not Path object
+    # 外部库 openpyxl.Workbook.save 要求字符串路径，需要显式转换
     workbook.save(str(table_path))
 
 

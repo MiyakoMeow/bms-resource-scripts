@@ -2,13 +2,11 @@ from pathlib import Path
 
 from fs import bms_dir_similarity
 from fs.move import REPLACE_OPTION_UPDATE_PACK, move_elements_across_dir
+from options import input_path
 
 
 def main() -> None:
-    src_dir_str = input("Input the src dir:")
-    if src_dir_str.startswith('"') and src_dir_str.endswith('"'):
-        src_dir_str = src_dir_str[1:-1]
-    src_dir = Path(src_dir_str)
+    src_dir = input_path()
     if not src_dir.is_dir():
         print(f"{src_dir}: not a dir.")
         return

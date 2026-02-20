@@ -58,7 +58,7 @@ def _try_decode_cp932_from_cp437(name: str) -> str | None:
 
 def unzip_zip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (zip)")
-    # zipfile.ZipFile requires str path, not Path object
+    # 外部库 zipfile.ZipFile 要求字符串路径，需要显式转换
     zf = zipfile.ZipFile(str(file_path))
     infos = zf.infolist()
 
@@ -86,7 +86,7 @@ def unzip_zip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
 
     # 单条目任务：重新打开 zip 以避免多线程共享句柄
     def extract_one(member_name: str) -> None:
-        # zipfile.ZipFile requires str path, not Path object
+        # 外部库 zipfile.ZipFile 要求字符串路径，需要显式转换
         with zipfile.ZipFile(str(file_path)) as z2:
             info = next(i for i in z2.infolist() if i.filename == member_name)
             rel_name = decode_name(info)
@@ -113,7 +113,7 @@ def unzip_zip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
 
 def unzip_7z_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (7z)")
-    # py7zr.SevenZipFile requires str path, not Path object
+    # 外部库 py7zr.SevenZipFile 要求字符串路径，需要显式转换
     sevenzip_file = py7zr.SevenZipFile(str(file_path))
     sevenzip_file.extractall(str(cache_dir_path))
     sevenzip_file.close()
@@ -121,7 +121,7 @@ def unzip_7z_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
 
 def unzip_rar_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (RAR)")
-    # rarfile.RarFile requires str path, not Path object
+    # 外部库 rarfile.RarFile 要求字符串路径，需要显式转换
     rar_file = rarfile.RarFile(str(file_path))
     rar_file.extractall(str(cache_dir_path))
     rar_file.close()

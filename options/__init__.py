@@ -27,26 +27,29 @@ def input_path() -> Path:
     paths: list[Path] = []
     with _LOG_FILE_PATH.open() as f:
         for line in f.readlines():
-            path = line.strip()
-            if len(path) == 0:
+            path_str = line.strip()
+            if len(path_str) == 0:
                 continue
             # 移除引号
-            if path.startswith('"') and path.endswith('"'):
-                path = path[1:-1]
-            paths.append(Path(path))
+            if path_str.startswith('"') and path_str.endswith('"'):
+                path_str = path_str[1:-1]
+            paths.append(Path(path_str))
 
     # 去重并保持顺序，越往前代表时间越近
+    seen: set[str] = set()
     unique_paths: list[Path] = []
-    for path in paths:  # type: ignore[assignment]
-        if path not in unique_paths:  # type: ignore[comparison-overlap]
-            unique_paths.append(path)  # type: ignore[arg-type]
+    for path in paths:
+        path_str = str(path)
+        if path_str not in seen:
+            seen.add(path_str)
+            unique_paths.append(path)
     paths = unique_paths  # 保存所有选择过的路径
 
     # 显示历史路径（只显示最近的5个）
     if len(paths) > 0:
         print("输入路径开始。以下是之前使用过的路径：")
         display_paths = paths[:5]  # 只显示最近的5个
-        for i, path in enumerate(display_paths):  # type: ignore[assignment]
+        for i, path in enumerate(display_paths):
             print(f" -> {i}: {path}")
         if len(paths) > 5:
             print(f"（还有 {len(paths) - 5} 个历史路径，输入？查看全部）")
@@ -58,7 +61,7 @@ def input_path() -> Path:
     if selection_str.strip() in ["？", "?"]:
         if len(paths) > 0:
             print("所有可选选项：")
-            for i, path in enumerate(paths):  # type: ignore[assignment]
+            for i, path in enumerate(paths):
                 print(f"  {i}: {path}")
         else:
             print("暂无历史路径记录")
@@ -68,21 +71,28 @@ def input_path() -> Path:
     if selection_str.isdigit() and 0 <= int(selection_str) < len(paths):
         selected_path = paths[int(selection_str)]
         # 将选中的路径移到最前面（最新的位置）
-        paths.remove(selected_path)
+        paths.pop(int(selection_str))
         paths.insert(0, selected_path)
     else:
         selected_path = Path(selection_str)
         # 将新路径添加到最前面
-        if selected_path not in paths:
+        selected_path_str = str(selected_path)
+        existing_index = None
+        for i, p in enumerate(paths):
+            if str(p) == selected_path_str:
+                existing_index = i
+                break
+        if existing_index is None:
             paths.insert(0, selected_path)
         else:
             # 如果已存在，移动到最前面
-            paths.remove(selected_path)
+            paths.pop(existing_index)
             paths.insert(0, selected_path)
 
     # 保存更新后的路径（保存所有选择过的路径）
     with _LOG_FILE_PATH.open("w") as f:
-        for path in paths:  # type: ignore[assignment]
+        for path in paths:
+            # 序列化到文件时需要转换为字符串
             f.write(str(path) + "\n")
 
     return selected_path

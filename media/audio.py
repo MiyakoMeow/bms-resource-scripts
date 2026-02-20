@@ -47,7 +47,7 @@ def _get_audio_precess_cmd(
 ) -> str:
     # Execute
     arg = preset.arg if preset.arg is not None else ""
-    # Convert Path to str for shell command (external subprocess requires str)
+    # 外部库 subprocess 要求字符串路径用于 shell 命令，需要显式转换
     file_path_str = str(file_path)
     output_file_path_str = str(output_file_path)
     if preset.exec == "ffmpeg":
