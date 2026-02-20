@@ -129,14 +129,17 @@ def unzip_rar_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
 
 def unzip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
     file_name = file_path.name
-    if str(file_path).endswith(".zip"):
+    file_suffix = file_path.suffix.lower()
+    if file_suffix == ".zip":
         unzip_zip_file_to_cache_dir(file_path, cache_dir_path)
-    elif str(file_path).endswith(".7z"):
+    elif file_suffix == ".7z":
         unzip_7z_file_to_cache_dir(file_path, cache_dir_path)
-    elif str(file_path).endswith(".rar"):
+    elif file_suffix == ".rar":
         unzip_rar_file_to_cache_dir(file_path, cache_dir_path)
     else:
-        target_file_path = cache_dir_path / "".join(file_name.split(" ")[1:])
+        parts = file_name.split(" ", 1)
+        target_file_name = parts[1] if len(parts) > 1 else file_name
+        target_file_path = cache_dir_path / target_file_name
         print(f"Coping {file_path} to {target_file_path}")
         shutil.copy(file_path, target_file_path)
 

@@ -34,10 +34,12 @@ def bms_dir_similarity(dir_path_a: Path, dir_path_b: Path) -> float:
     )
 
     def fetch_dir_elements(dir_path: Path) -> tuple[list[str], list[str], list[str]]:
-        file_list: list[str] = [p.name for p in dir_path.iterdir()]
-        media_list: list[str] = [Path(name).stem or "" for name in file_list if name.endswith(media_ext_list)]
-        non_media_list: list[str] = [name for name in file_list if not name.endswith(media_ext_list)]
-        return (file_list, media_list, non_media_list)
+        file_paths: list[Path] = list(dir_path.iterdir())
+        media_list: list[str] = [p.stem for p in file_paths if p.is_file() and p.suffix.lower() in media_ext_list]
+        non_media_list: list[str] = [
+            p.name for p in file_paths if p.is_file() and p.suffix.lower() not in media_ext_list
+        ]
+        return ([p.name for p in file_paths], media_list, non_media_list)
 
     file_set_a, media_set_a, non_media_set_a = [set(e_list) for e_list in fetch_dir_elements(dir_path_a)]
     if not file_set_a or not media_set_a or not non_media_set_a:

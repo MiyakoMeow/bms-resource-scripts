@@ -120,7 +120,7 @@ def transfer_audio_by_format_in_dir(
     err_stderr = b""
 
     # 创建线程池
-    hdd = not str(dir).upper().startswith("C:")
+    hdd = dir.drive.upper() != "C:"
     max_workers = min(multiprocessing.cpu_count(), 24) if hdd else multiprocessing.cpu_count()
 
     # Submit

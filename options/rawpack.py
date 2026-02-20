@@ -101,7 +101,7 @@ def unzip_with_name_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Pat
 
     for file_name in num_set_file_names:
         file_path = pack_dir / file_name
-        file_name_without_ext = file_name[: -len(file_name.rsplit(".", 1)[-1]) - 1]
+        file_name_without_ext = file_path.stem
         while len(file_name_without_ext) > 0 and file_name_without_ext[-1] == ".":
             file_name_without_ext = file_name_without_ext[:-1]
 
@@ -169,7 +169,7 @@ def _set_file_num(
         if file_name.split()[0].isdigit():
             continue
         # Linux: Has Partial File?
-        part_file_path = Path(f"{file_path}.part")
+        part_file_path = file_path.with_name(f"{file_path.name}.part")
         if part_file_path.is_file():
             continue
         # Linux: Empty File?

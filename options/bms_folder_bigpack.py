@@ -186,7 +186,7 @@ def _workdir_remove_unneed_media_files(work_dir: Path, rule: list[tuple[list[str
         if not check_file_path.is_file():
             continue
 
-        file_ext = file_name.rsplit(".")[-1]
+        file_ext = check_file_path.suffix.lstrip(".")
         for upper_exts, lower_exts in rule:
             if file_ext not in upper_exts:
                 continue
@@ -221,7 +221,7 @@ def _workdir_remove_unneed_media_files(work_dir: Path, rule: list[tuple[list[str
             continue
 
         # Count ext
-        file_ext = count_file_name.rsplit(".")[-1]
+        file_ext = count_file_path.suffix.lstrip(".")
         if ext_count.get(file_ext) is None:
             ext_count.update({file_ext: [count_file_name]})
         else:
