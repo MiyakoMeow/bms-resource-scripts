@@ -1,5 +1,4 @@
 import multiprocessing
-import os
 import shutil
 import time
 import zipfile
@@ -13,9 +12,10 @@ from bms import CHART_FILE_EXTS
 from fs.move import move_elements_across_dir
 
 
-def _safe_join(base_dir: Path, relative_path: str) -> Path:
+def _safe_join(base_dir: Path, relative_path: Path) -> Path:
     # Normalize separators to OS style first
-    rel = relative_path.replace("/", "/").replace("\\", "/")
+    relative_path_str = str(relative_path)
+    rel = relative_path_str.replace("/", "/").replace("\\", "/")
     # Remove drive letters and leading path separators to avoid traversal / drive jump
     rel = rel.lstrip("/\\")
     # Compose and normalize
@@ -43,7 +43,7 @@ def _set_mtime(target_path: Path, date_time_tuple: tuple[int, int, int, int, int
     )
     d_timearry = time.mktime(time.strptime(d_gettime, "%Y/%m/%d %H:%M"))
     try:
-        os.utime(target_path, (d_timearry, d_timearry))
+        target_path.utime((d_timearry, d_timearry))  # type: ignore[attr-defined]
     except FileNotFoundError:
         pass
 
@@ -58,6 +58,7 @@ def _try_decode_cp932_from_cp437(name: str) -> str | None:
 
 def unzip_zip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (zip)")
+    # zipfile.ZipFile requires str path, not Path object
     zf = zipfile.ZipFile(str(file_path))
     infos = zf.infolist()
 
@@ -85,10 +86,11 @@ def unzip_zip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
 
     # 单条目任务：重新打开 zip 以避免多线程共享句柄
     def extract_one(member_name: str) -> None:
+        # zipfile.ZipFile requires str path, not Path object
         with zipfile.ZipFile(str(file_path)) as z2:
             info = next(i for i in z2.infolist() if i.filename == member_name)
             rel_name = decode_name(info)
-            out_path = _safe_join(cache_dir_path, rel_name)
+            out_path = _safe_join(cache_dir_path, Path(rel_name))
             if info.is_dir() or rel_name.endswith("/"):
                 out_path.mkdir(parents=True, exist_ok=True)
                 _set_mtime(out_path, info.date_time)
@@ -111,6 +113,7 @@ def unzip_zip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
 
 def unzip_7z_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (7z)")
+    # py7zr.SevenZipFile requires str path, not Path object
     sevenzip_file = py7zr.SevenZipFile(str(file_path))
     sevenzip_file.extractall(str(cache_dir_path))
     sevenzip_file.close()
@@ -118,6 +121,7 @@ def unzip_7z_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
 
 def unzip_rar_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (RAR)")
+    # rarfile.RarFile requires str path, not Path object
     rar_file = rarfile.RarFile(str(file_path))
     rar_file.extractall(str(cache_dir_path))
     rar_file.close()

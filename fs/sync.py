@@ -1,5 +1,4 @@
 import hashlib
-import os
 import shutil
 from enum import Enum
 from pathlib import Path
@@ -225,12 +224,12 @@ def sync_folder(
                         _src_copy_files.append(src_element)
                         shutil.copy(src_path, dst_path)
                         # Set atime/mtime
-                        os.utime(dst_path, (src_mtime, src_mtime))
+                        dst_path.utime((src_mtime, src_mtime))  # type: ignore[attr-defined]
                     case SoftSyncExec.MOVE:
                         _src_move_files.append(src_element)
                         shutil.move(src_path, dst_path)
                         # Set atime/mtime
-                        os.utime(dst_path, (src_mtime, src_mtime))
+                        dst_path.utime((src_mtime, src_mtime))  # type: ignore[attr-defined]
             # Remove same ori files
             if preset.remove_src_same_files and dst_file_exists and is_same_file and src_path.is_file():
                 _src_remove_files.append(src_element)

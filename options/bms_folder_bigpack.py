@@ -179,8 +179,8 @@ def move_works_in_pack(root_dir_from: Path, root_dir_to: Path) -> None:
 
 
 def _workdir_remove_unneed_media_files(work_dir: Path, rule: list[tuple[list[str], list[str]]]) -> None:
-    remove_pairs: list[tuple[str, str]] = []
-    removed_files: set[str] = set()
+    remove_pairs: list[tuple[Path, Path]] = []
+    removed_files: set[Path] = set()
     for file_name in [p.name for p in work_dir.iterdir()]:
         check_file_path = work_dir / file_name
         if not check_file_path.is_file():
@@ -200,18 +200,18 @@ def _workdir_remove_unneed_media_files(work_dir: Path, rule: list[tuple[list[str
                 # File not exist?
                 if not replacing_file_path.is_file():
                     continue
-                if str(replacing_file_path) in removed_files:
+                if replacing_file_path in removed_files:
                     continue
-                remove_pairs.append((str(check_file_path), str(replacing_file_path)))
-                removed_files.add(str(replacing_file_path))
+                remove_pairs.append((check_file_path, replacing_file_path))
+                removed_files.add(replacing_file_path)
 
     if len(remove_pairs) > 0:
         print(f"Entering: {work_dir}")
 
     # Remove file
-    for file_path_str, replacing_file_path_str in remove_pairs:
-        print(f"- Remove file {Path(replacing_file_path_str).name}, because {Path(file_path_str).name} exists.")
-        Path(replacing_file_path_str).unlink()
+    for check_file_path, replacing_file_path in remove_pairs:
+        print(f"- Remove file {replacing_file_path.name}, because {check_file_path.name} exists.")
+        replacing_file_path.unlink()
 
     # Finished: Count Ext
     ext_count: dict[str, list[str]] = {}

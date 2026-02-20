@@ -47,6 +47,7 @@ def _get_audio_precess_cmd(
 ) -> str:
     # Execute
     arg = preset.arg if preset.arg is not None else ""
+    # Convert Path to str for shell command (external subprocess requires str)
     file_path_str = str(file_path)
     output_file_path_str = str(output_file_path)
     if preset.exec == "ffmpeg":
@@ -83,7 +84,7 @@ def transfer_audio_by_format_in_dir(
         # Check ext
         ext_found: str | None = None
         for ext in input_exts:
-            if str(file_path).lower().endswith("." + ext):
+            if file_path.suffix.lower() == "." + ext:
                 ext_found = ext
         if ext_found is None:
             return None

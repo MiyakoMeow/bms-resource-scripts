@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import subprocess
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -21,28 +23,30 @@ def input_path() -> Path:
         with _LOG_FILE_PATH.open("w") as f:
             f.write("\n")
 
-    # 读取历史路径
-    paths = []
+    # 读取历史路径，存储为Path对象
+    paths: list[Path] = []
     with _LOG_FILE_PATH.open() as f:
-        paths = [path.lstrip() for path in f.readlines()]
-        paths = [path for path in paths if len(path) > 0]
-        paths = [(path[:-1] if path.endswith("\n") else path) for path in paths]
-        paths = [(path[:-1] if path.endswith("\r") else path) for path in paths]
-        paths = [(path[1:-1] if path.startswith('"') and path.endswith('"') else path) for path in paths]
-        paths = [path.lstrip() for path in paths]
+        for line in f.readlines():
+            path = line.strip()
+            if len(path) == 0:
+                continue
+            # 移除引号
+            if path.startswith('"') and path.endswith('"'):
+                path = path[1:-1]
+            paths.append(Path(path))
 
     # 去重并保持顺序，越往前代表时间越近
-    unique_paths = []
-    for path in paths:
-        if path not in unique_paths:
-            unique_paths.append(path)
+    unique_paths: list[Path] = []
+    for path in paths:  # type: ignore[assignment]
+        if path not in unique_paths:  # type: ignore[comparison-overlap]
+            unique_paths.append(path)  # type: ignore[arg-type]
     paths = unique_paths  # 保存所有选择过的路径
 
     # 显示历史路径（只显示最近的5个）
     if len(paths) > 0:
         print("输入路径开始。以下是之前使用过的路径：")
         display_paths = paths[:5]  # 只显示最近的5个
-        for i, path in enumerate(display_paths):
+        for i, path in enumerate(display_paths):  # type: ignore[assignment]
             print(f" -> {i}: {path}")
         if len(paths) > 5:
             print(f"（还有 {len(paths) - 5} 个历史路径，输入？查看全部）")
@@ -54,7 +58,7 @@ def input_path() -> Path:
     if selection_str.strip() in ["？", "?"]:
         if len(paths) > 0:
             print("所有可选选项：")
-            for i, path in enumerate(paths):
+            for i, path in enumerate(paths):  # type: ignore[assignment]
                 print(f"  {i}: {path}")
         else:
             print("暂无历史路径记录")
@@ -62,26 +66,26 @@ def input_path() -> Path:
 
     # 处理选择
     if selection_str.isdigit() and 0 <= int(selection_str) < len(paths):
-        selection = paths[int(selection_str)]
+        selected_path = paths[int(selection_str)]
         # 将选中的路径移到最前面（最新的位置）
-        paths.remove(selection)
-        paths.insert(0, selection)
+        paths.remove(selected_path)
+        paths.insert(0, selected_path)
     else:
-        selection = selection_str
+        selected_path = Path(selection_str)
         # 将新路径添加到最前面
-        if selection not in paths:
-            paths.insert(0, selection)
+        if selected_path not in paths:
+            paths.insert(0, selected_path)
         else:
             # 如果已存在，移动到最前面
-            paths.remove(selection)
-            paths.insert(0, selection)
+            paths.remove(selected_path)
+            paths.insert(0, selected_path)
 
     # 保存更新后的路径（保存所有选择过的路径）
     with _LOG_FILE_PATH.open("w") as f:
-        for path in paths:
-            f.write(path + "\n")
+        for path in paths:  # type: ignore[assignment]
+            f.write(str(path) + "\n")
 
-    return Path(selection)
+    return selected_path
 
 
 class InputType(Enum):
