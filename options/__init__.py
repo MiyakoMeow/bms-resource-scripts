@@ -1,29 +1,29 @@
-import os
 import subprocess
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from pathlib import Path
 from typing import Any
 
 from bms import CHART_FILE_EXTS, MEDIA_FILE_EXTS
 
 # 获取当前文件的绝对路径
-_CURRENT_PATH = os.path.abspath(__file__)
+_CURRENT_PATH = Path(__file__).resolve()
 
 # 获取当前文件所在目录
-_CURRENT_DIR = os.path.dirname(_CURRENT_PATH)
+_CURRENT_DIR = _CURRENT_PATH.parent
 
-_LOG_FILE_PATH = os.path.join(_CURRENT_DIR, "history.log")
+_LOG_FILE_PATH = _CURRENT_DIR / "history.log"
 
 
-def input_path() -> str:
-    if not os.path.isfile(_LOG_FILE_PATH):
-        with open(_LOG_FILE_PATH, "w") as f:
+def input_path() -> Path:
+    if not _LOG_FILE_PATH.is_file():
+        with _LOG_FILE_PATH.open("w") as f:
             f.write("\n")
 
     # 读取历史路径
     paths = []
-    with open(_LOG_FILE_PATH) as f:
+    with _LOG_FILE_PATH.open() as f:
         paths = [path.lstrip() for path in f.readlines()]
         paths = [path for path in paths if len(path) > 0]
         paths = [(path[:-1] if path.endswith("\n") else path) for path in paths]
@@ -77,11 +77,11 @@ def input_path() -> str:
             paths.insert(0, selection)
 
     # 保存更新后的路径（保存所有选择过的路径）
-    with open(_LOG_FILE_PATH, "w") as f:
+    with _LOG_FILE_PATH.open("w") as f:
         for path in paths:
             f.write(path + "\n")
 
-    return selection
+    return Path(selection)
 
 
 class InputType(Enum):
@@ -189,16 +189,10 @@ class Option:
         self.func(*args)
 
 
-def is_root_dir(*root_dir: str) -> bool:
+def is_root_dir(*root_dir: Path) -> bool:
     for dir in root_dir:
         result = (
-            len(
-                [
-                    file
-                    for file in os.listdir(dir)
-                    if file.endswith(CHART_FILE_EXTS + MEDIA_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
-                ]
-            )
+            len([p.name for p in dir.iterdir() if p.name.endswith(CHART_FILE_EXTS + MEDIA_FILE_EXTS) and p.is_file()])
             == 0
         )
         if not result:
@@ -206,33 +200,19 @@ def is_root_dir(*root_dir: str) -> bool:
     return True
 
 
-def is_work_dir(*root_dir: str) -> bool:
+def is_work_dir(*root_dir: Path) -> bool:
     for dir in root_dir:
         result = (
-            len(
-                [
-                    file
-                    for file in os.listdir(dir)
-                    if file.endswith(CHART_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
-                ]
-            )
-            > 0
-            and len(
-                [
-                    file
-                    for file in os.listdir(dir)
-                    if file.endswith(MEDIA_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
-                ]
-            )
-            > 0
+            len([p.name for p in dir.iterdir() if p.name.endswith(CHART_FILE_EXTS) and p.is_file()]) > 0
+            and len([p.name for p in dir.iterdir() if p.name.endswith(MEDIA_FILE_EXTS) and p.is_file()]) > 0
         )
         if not result:
             return False
     return True
 
 
-def is_not_a_dir(dir: str) -> bool:
-    return not os.path.isdir(dir)
+def is_not_a_dir(dir: Path) -> bool:
+    return not dir.is_dir()
 
 
 # === Exec checks (split by executable) ===

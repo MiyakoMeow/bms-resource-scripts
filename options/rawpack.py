@@ -1,5 +1,5 @@
-import os
 import shutil
+from pathlib import Path
 
 from fs.move import is_dir_having_file, move_elements_across_dir
 from fs.rawpack import (
@@ -10,11 +10,11 @@ from fs.rawpack import (
 from options import Input, InputType, Option
 
 
-def unzip_numeric_to_bms_folder(pack_dir: str, cache_dir: str, root_dir: str, confirm: bool = False) -> None:
-    if not os.path.isdir(cache_dir):
-        os.mkdir(cache_dir)
-    if not os.path.isdir(root_dir):
-        os.mkdir(root_dir)
+def unzip_numeric_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Path, confirm: bool = False) -> None:
+    if not cache_dir.is_dir():
+        cache_dir.mkdir()
+    if not root_dir.is_dir():
+        root_dir.mkdir()
 
     num_set_file_names: list[str] = get_num_set_file_names(pack_dir)
 
@@ -26,17 +26,17 @@ def unzip_numeric_to_bms_folder(pack_dir: str, cache_dir: str, root_dir: str, co
             return
 
     for file_name in num_set_file_names:
-        file_path = os.path.join(pack_dir, file_name)
+        file_path = pack_dir / file_name
         id_str = file_name.split(" ")[0]
 
         # Prepare an empty cache dir
-        cache_dir_path = os.path.join(cache_dir, id_str)
+        cache_dir_path = cache_dir / id_str
 
-        if os.path.isdir(cache_dir_path) and is_dir_having_file(cache_dir_path):
-            shutil.rmtree(cache_dir_path)
+        if cache_dir_path.is_dir() and is_dir_having_file(cache_dir_path):
+            shutil.rmtree(str(cache_dir_path))
 
-        if not os.path.isdir(cache_dir_path):
-            os.mkdir(cache_dir_path)
+        if not cache_dir_path.is_dir():
+            cache_dir_path.mkdir()
 
         # Unpack & Copy
         unzip_file_to_cache_dir(file_path, cache_dir_path)
@@ -48,9 +48,9 @@ def unzip_numeric_to_bms_folder(pack_dir: str, cache_dir: str, root_dir: str, co
 
         # Find Existing Target dir
         target_dir_path = None
-        for dir_name in os.listdir(root_dir):
-            dir_path = os.path.join(root_dir, dir_name)
-            if not os.path.isdir(dir_path):
+        for dir_name in [p.name for p in root_dir.iterdir()]:
+            dir_path = root_dir / dir_name
+            if not dir_path.is_dir():
                 continue
             if not (
                 dir_name.startswith(id_str)
@@ -61,34 +61,34 @@ def unzip_numeric_to_bms_folder(pack_dir: str, cache_dir: str, root_dir: str, co
 
         # Create New Target dir
         if target_dir_path is None:
-            target_dir_path = os.path.join(root_dir, id_str)
+            target_dir_path = root_dir / id_str
 
         # Move cache to bms dir
         print(f" > Moving files in {cache_dir_path} to {target_dir_path}")
         move_elements_across_dir(cache_dir_path, target_dir_path)
         try:
-            os.rmdir(cache_dir_path)
+            cache_dir_path.rmdir()
         except FileNotFoundError:
             pass
 
         # Move File to Another dir
         print(f" > Finish dealing with file: {file_name}")
-        used_pack_dir = os.path.join(pack_dir, "BOFTTPacks")
-        if not os.path.isdir(used_pack_dir):
-            os.mkdir(used_pack_dir)
-        shutil.move(file_path, os.path.join(used_pack_dir, file_name))
+        used_pack_dir = pack_dir / "BOFTTPacks"
+        if not used_pack_dir.is_dir():
+            used_pack_dir.mkdir()
+        shutil.move(str(file_path), str(used_pack_dir / file_name))
 
 
-def unzip_with_name_to_bms_folder(pack_dir: str, cache_dir: str, root_dir: str, confirm: bool = False) -> None:
-    if not os.path.isdir(cache_dir):
-        os.mkdir(cache_dir)
-    if not os.path.isdir(root_dir):
-        os.mkdir(root_dir)
+def unzip_with_name_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Path, confirm: bool = False) -> None:
+    if not cache_dir.is_dir():
+        cache_dir.mkdir()
+    if not root_dir.is_dir():
+        root_dir.mkdir()
 
     num_set_file_names: list[str] = [
         file_name
-        for file_name in os.listdir(pack_dir)
-        if os.path.isfile(os.path.join(pack_dir, file_name))
+        for file_name in [p.name for p in pack_dir.iterdir()]
+        if (pack_dir / file_name).is_file()
         and (file_name.endswith(".zip") or file_name.endswith(".7z") or file_name.endswith(".rar"))
     ]
 
@@ -100,19 +100,19 @@ def unzip_with_name_to_bms_folder(pack_dir: str, cache_dir: str, root_dir: str, 
             return
 
     for file_name in num_set_file_names:
-        file_path = os.path.join(pack_dir, file_name)
+        file_path = pack_dir / file_name
         file_name_without_ext = file_name[: -len(file_name.rsplit(".", 1)[-1]) - 1]
         while len(file_name_without_ext) > 0 and file_name_without_ext[-1] == ".":
             file_name_without_ext = file_name_without_ext[:-1]
 
         # Prepare an empty cache dir
-        cache_dir_path = os.path.join(cache_dir, file_name_without_ext)
+        cache_dir_path = cache_dir / file_name_without_ext
 
-        if os.path.isdir(cache_dir_path) and is_dir_having_file(cache_dir_path):
-            shutil.rmtree(cache_dir_path)
+        if cache_dir_path.is_dir() and is_dir_having_file(cache_dir_path):
+            shutil.rmtree(str(cache_dir_path))
 
-        if not os.path.isdir(cache_dir_path):
-            os.mkdir(cache_dir_path)
+        if not cache_dir_path.is_dir():
+            cache_dir_path.mkdir()
 
         # Unpack & Copy
         unzip_file_to_cache_dir(file_path, cache_dir_path)
@@ -122,35 +122,35 @@ def unzip_with_name_to_bms_folder(pack_dir: str, cache_dir: str, root_dir: str, 
         if not move_result:
             continue
 
-        target_dir_path = os.path.join(root_dir, file_name_without_ext)
+        target_dir_path = root_dir / file_name_without_ext
 
         # Move cache to bms dir
         print(f" > Moving files in {cache_dir_path} to {target_dir_path}")
         move_elements_across_dir(cache_dir_path, target_dir_path)
         try:
-            os.rmdir(cache_dir_path)
+            cache_dir_path.rmdir()
         except FileNotFoundError:
             pass
 
         # Move File to Another dir
         print(f" > Finish dealing with file: {file_name}")
-        used_pack_dir = os.path.join(pack_dir, "BOFTTPacks")
-        if not os.path.isdir(used_pack_dir):
-            os.mkdir(used_pack_dir)
-        shutil.move(file_path, os.path.join(used_pack_dir, file_name))
+        used_pack_dir = pack_dir / "BOFTTPacks"
+        if not used_pack_dir.is_dir():
+            used_pack_dir.mkdir()
+        shutil.move(str(file_path), str(used_pack_dir / file_name))
 
 
-def _rename_file_with_num(dir: str, file_name: str, input_num: int) -> None:
-    file_path = os.path.join(dir, file_name)
+def _rename_file_with_num(dir: Path, file_name: str, input_num: int) -> None:
+    file_path = dir / file_name
     new_file_name = f"{input_num} {file_name}"
-    new_file_path = os.path.join(dir, new_file_name)
-    shutil.move(file_path, new_file_path)
+    new_file_path = dir / new_file_name
+    shutil.move(str(file_path), str(new_file_path))
     print(f"Rename {file_name} to {new_file_name}.")
     print()
 
 
 def _set_file_num(
-    dir: str,
+    dir: Path,
     allow_ext: list[str] | None = None,
     disallow_ext: list[str] | None = None,
     allow_others: bool = True,
@@ -160,20 +160,20 @@ def _set_file_num(
     if allow_ext is None:
         allow_ext = []
     file_names = []
-    for file_name in os.listdir(dir):
-        file_path = os.path.join(dir, file_name)
+    for file_name in [p.name for p in dir.iterdir()]:
+        file_path = dir / file_name
         # Not File?
-        if not os.path.isfile(file_path):
+        if not file_path.is_file():
             continue
         # Has been numbered?
         if file_name.split()[0].isdigit():
             continue
         # Linux: Has Partial File?
-        part_file_path = f"{file_path}.part"
-        if os.path.isfile(part_file_path):
+        part_file_path = Path(f"{file_path}.part")
+        if part_file_path.is_file():
             continue
         # Linux: Empty File?
-        if os.path.getsize(file_path) == 0:
+        if file_path.stat().st_size == 0:
             continue
         # Is Allowed?
         file_ext = file_name.rsplit(".", 1)[-1]
@@ -208,7 +208,7 @@ def _set_file_num(
         print()
 
 
-def set_file_num(dir: str) -> None:
+def set_file_num(dir: Path) -> None:
     while True:
         _set_file_num(
             dir,

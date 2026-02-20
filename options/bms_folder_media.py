@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from bms import AUDIO_FILE_EXTS, VIDEO_FILE_EXTS
 from media.audio import AUDIO_PRESETS, bms_folder_transfer_audio
 from media.video import VIDEO_PRESETS, bms_folder_transfer_video
@@ -12,7 +14,7 @@ from options import (
 )
 
 
-def transfer_audio(root_dir: str) -> None:
+def transfer_audio(root_dir: Path) -> None:
     print("选择目标格式：")
     for i, preset in enumerate(AUDIO_PRESETS):
         print(f" - {i}: {preset}")
@@ -32,7 +34,7 @@ def transfer_audio(root_dir: str) -> None:
     )
 
 
-def transfer_video(root_dir: str) -> None:
+def transfer_video(root_dir: Path) -> None:
     print("选择目标格式：")
     for i, preset in enumerate(VIDEO_PRESETS):
         print(f" - {i}: {preset}")

@@ -1,4 +1,5 @@
 import codecs
+from pathlib import Path
 
 ENCODINGS = [
     "shift-jis",
@@ -97,12 +98,12 @@ class PriorityDecoder:
         return "".join(result)
 
 
-def read_file_with_priority(file_path: str, encoding_priority: list[str], errors: str = "strict") -> str | None:
+def read_file_with_priority(file_path: Path, encoding_priority: list[str], errors: str = "strict") -> str | None:
     """
     读取文件并按照编码优先级逐字符解码
 
     Args:
-        file_path (str): 文件路径
+        file_path (Path): 文件路径
         encoding_priority (List[str]): 编码优先级列表
         errors (str): 错误处理方式
 
@@ -110,7 +111,7 @@ def read_file_with_priority(file_path: str, encoding_priority: list[str], errors
         Optional[str]: 解码后的内容，失败返回None
     """
     try:
-        with open(file_path, "rb") as f:
+        with file_path.open("rb") as f:
             byte_data = f.read()
             decoder = PriorityDecoder(encoding_priority)
             return decoder.decode(byte_data, errors)

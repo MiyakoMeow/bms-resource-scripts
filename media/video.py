@@ -1,7 +1,7 @@
 import copy
 import json
-import os
 import subprocess
+from pathlib import Path
 from typing import Any, cast
 
 """
@@ -9,8 +9,9 @@ Media
 """
 
 
-def get_media_file_probe(file_path: str) -> dict[Any, Any]:
-    cmd = f'ffprobe -show_format -show_streams -print_format json -v quiet "{file_path}"'
+def get_media_file_probe(file_path: Path) -> dict[Any, Any]:
+    file_path_str = str(file_path)
+    cmd = f'ffprobe -show_format -show_streams -print_format json -v quiet "{file_path_str}"'
     print(f"Exec: {cmd}")
     result = subprocess.run(
         cmd,
@@ -34,7 +35,7 @@ class VideoInfo:
         self.bit_rate = bit_rate
 
 
-def get_video_info(file_path: str) -> VideoInfo | None:
+def get_video_info(file_path: Path) -> VideoInfo | None:
     probe = get_media_file_probe(file_path)
     for stream in probe["streams"]:
         if stream["codec_type"] != "video":
@@ -48,7 +49,7 @@ def get_video_info(file_path: str) -> VideoInfo | None:
     return None
 
 
-def get_video_size(file_path: str) -> tuple[int, int] | None:
+def get_video_size(file_path: Path) -> tuple[int, int] | None:
     probe = get_media_file_probe(file_path)
     for stream in probe["streams"]:
         if stream["codec_type"] != "video":
@@ -89,17 +90,19 @@ class VideoPreset:
     def __repr__(self) -> str:
         return self.__str__()
 
-    def get_output_file_path(self, input_file_path: str) -> str:
-        return input_file_path[: -len(input_file_path.rsplit(".", 1)[-1])] + self.output_file_ext
+    def get_output_file_path(self, input_file_path: Path) -> Path:
+        return input_file_path.parent / (input_file_path.stem + "." + self.output_file_ext)
 
-    def get_video_process_cmd(self, input_file_path: str, output_file_path: str) -> str:
+    def get_video_process_cmd(self, input_file_path: Path, output_file_path: Path) -> str:
+        input_file_path_str = str(input_file_path)
+        output_file_path_str = str(output_file_path)
         input_arg = self.input_arg if self.input_arg is not None else ""
         fliter_arg = self.fliter_arg if self.fliter_arg is not None else ""
         inner_arg = "-map_metadata 0" if self.exec == "ffmpeg" else ""
         return (
-            f'{self.exec} {input_arg} "{input_file_path}" '
+            f'{self.exec} {input_arg} "{input_file_path_str}" '
             f"{fliter_arg} {inner_arg} -c:v {self.output_codec} "
-            f'{self.arg} "{output_file_path}" '
+            f'{self.arg} "{output_file_path_str}" '
         )
 
 
@@ -137,7 +140,7 @@ VIDEO_PRESETS = [
 ]
 
 
-def get_prefered_preset_list(file_path: str) -> list[VideoPreset]:
+def get_prefered_preset_list(file_path: Path) -> list[VideoPreset]:
     video_size = get_video_size(file_path)
     if video_size is None:
         return []
@@ -157,7 +160,7 @@ def get_prefered_preset_list(file_path: str) -> list[VideoPreset]:
 
 
 def process_video_in_dir(
-    dir: str,
+    dir: Path,
     input_exts: list[str] | None = None,
     presets: list[VideoPreset] | None = None,
     remove_origin_file: bool = True,
@@ -174,9 +177,9 @@ def process_video_in_dir(
         input_exts = ["mp4", "avi"]
     has_error = False
     file_name_list: list[str] = []
-    for file_name in os.listdir(dir):
-        file_path = os.path.join(dir, file_name)
-        if not os.path.isfile(file_path):
+    for file_name in [p.name for p in dir.iterdir()]:
+        file_path = dir / file_name
+        if not file_path.is_file():
             continue
         # Check ext
         ext_checked = False
@@ -192,7 +195,7 @@ def process_video_in_dir(
         print("Entering dir:", dir)
 
     for file_name in file_name_list:
-        file_path = os.path.join(dir, file_name)
+        file_path = dir / file_name
         # Get prefered
         presets_for_file = copy.deepcopy(presets)
         if use_prefered:
@@ -205,9 +208,9 @@ def process_video_in_dir(
             if file_path == output_file_path:
                 # This file is the preset's output.
                 break
-            if os.path.isfile(output_file_path):
+            if output_file_path.is_file():
                 if remove_existing_target_file:
-                    os.remove(output_file_path)
+                    output_file_path.unlink()
                 else:
                     print(f"File exists: {output_file_path}")
                     continue
@@ -216,8 +219,8 @@ def process_video_in_dir(
             print(f"Processing Video: {file_path} Preset: {preset}")
             result = subprocess.run(cmd, shell=True, capture_output=True)
             if result.returncode != 0:
-                if os.path.isfile(output_file_path):
-                    os.remove(output_file_path)
+                if output_file_path.is_file():
+                    output_file_path.unlink()
                 if preset is presets[-1]:
                     print("Has Error!")
                     print("Cmd: ", cmd)
@@ -228,8 +231,8 @@ def process_video_in_dir(
                 continue
 
             # Normal End: Success
-            if remove_origin_file and os.path.isfile(file_path):
-                os.remove(file_path)
+            if remove_origin_file and file_path.is_file():
+                file_path.unlink()
             # No need to exec next ctrl.
             break
 
@@ -247,7 +250,7 @@ PRESETS: list[tuple[str, VideoPreset]] = [
 
 
 def bms_folder_transfer_video(
-    root_dir: str,
+    root_dir: Path,
     input_exts: list[str] | None = None,
     presets: list[VideoPreset] | None = None,
     remove_origin_file: bool = True,
@@ -266,9 +269,9 @@ def bms_folder_transfer_video(
         for selection in selections:
             presets.append(PRESETS[int(selection)][1])
 
-    for bms_dir_name in os.listdir(root_dir):
-        bms_dir_path = os.path.join(root_dir, bms_dir_name)
-        if not os.path.isdir(bms_dir_path):
+    for bms_dir_name in [p.name for p in root_dir.iterdir()]:
+        bms_dir_path = root_dir / bms_dir_name
+        if not bms_dir_path.is_dir():
             continue
 
         is_success = process_video_in_dir(

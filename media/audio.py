@@ -1,7 +1,7 @@
 import multiprocessing
-import os
 import subprocess
 import time
+from pathlib import Path
 
 """
 Audio
@@ -41,27 +41,29 @@ AUDIO_PRESETS = [
 
 
 def _get_audio_precess_cmd(
-    file_path: str,
-    output_file_path: str,
+    file_path: Path,
+    output_file_path: Path,
     preset: AudioPreset,
 ) -> str:
     # Execute
     arg = preset.arg if preset.arg is not None else ""
+    file_path_str = str(file_path)
+    output_file_path_str = str(output_file_path)
     if preset.exec == "ffmpeg":
         return (
-            f'ffmpeg -hide_banner -loglevel panic -i "{file_path}" '
-            f'-f {preset.output_format} -map_metadata 0 {arg} "{output_file_path}"'
+            f'ffmpeg -hide_banner -loglevel panic -i "{file_path_str}" '
+            f'-f {preset.output_format} -map_metadata 0 {arg} "{output_file_path_str}"'
         )
     elif preset.exec == "oggenc":
-        return f'oggenc {arg} "{file_path}" -o "{output_file_path}"'
+        return f'oggenc {arg} "{file_path_str}" -o "{output_file_path_str}"'
     elif preset.exec == "flac":
-        return f'flac {arg} "{file_path}" -o "{output_file_path}"'
+        return f'flac {arg} "{file_path_str}" -o "{output_file_path_str}"'
     else:
         return ""
 
 
 def transfer_audio_by_format_in_dir(
-    dir: str,
+    dir: Path,
     input_exts: list[str],
     presets: list[AudioPreset],
     remove_origin_file_when_success: bool = True,
@@ -74,32 +76,32 @@ def transfer_audio_by_format_in_dir(
     wav ogg ogg -ab 320k
     """
 
-    def check_input_file(dir: str, file_name: str, input_exts: list[str]) -> str | None:
-        file_path = os.path.join(dir, file_name)
-        if not os.path.isfile(file_path):
+    def check_input_file(dir: Path, file_name: str, input_exts: list[str]) -> Path | None:
+        file_path = dir / file_name
+        if not file_path.is_file():
             return None
         # Check ext
         ext_found: str | None = None
         for ext in input_exts:
-            if file_path.lower().endswith("." + ext):
+            if str(file_path).lower().endswith("." + ext):
                 ext_found = ext
         if ext_found is None:
             return None
-        return os.path.join(dir, file_name)
+        return dir / file_name
 
     def spawn_parse_audio_process(
-        file_path: str, preset_index: int, preset: AudioPreset
-    ) -> tuple[tuple[str, int], subprocess.Popen | None]:
+        file_path: Path, preset_index: int, preset: AudioPreset
+    ) -> tuple[tuple[Path, int], subprocess.Popen | None]:
         # New cmd
-        output_file_path = file_path[: -len(file_path.rsplit(".")[-1])] + preset.output_format
+        output_file_path = file_path.parent / (file_path.stem + "." + preset.output_format)
         # Target File exists?
-        if os.path.isfile(output_file_path):
-            if os.path.getsize(output_file_path) > 0 and not remove_existing_target_file:
+        if output_file_path.is_file():
+            if output_file_path.stat().st_size > 0 and not remove_existing_target_file:
                 print(f" - File {output_file_path} exists! Skipping...")
                 return (file_path, preset_index), None
             else:
                 print(f" - Remove existing file: {output_file_path}")
-                os.remove(output_file_path)
+                output_file_path.unlink()
         # Run cmd
         cmd = _get_audio_precess_cmd(
             file_path,
@@ -117,14 +119,14 @@ def transfer_audio_by_format_in_dir(
     err_stderr = b""
 
     # 创建线程池
-    hdd = not dir.upper().startswith("C:")
+    hdd = not str(dir).upper().startswith("C:")
     max_workers = min(multiprocessing.cpu_count(), 24) if hdd else multiprocessing.cpu_count()
 
     # Submit
-    processes: list[tuple[tuple[str, int], subprocess.Popen | None]] = []
-    task_args: list[tuple[str, int, AudioPreset]] = [
-        (os.path.join(dir, file_name), 0, presets[0])
-        for file_name in os.listdir(dir)
+    processes: list[tuple[tuple[Path, int], subprocess.Popen | None]] = []
+    task_args: list[tuple[Path, int, AudioPreset]] = [
+        (dir / file_name, 0, presets[0])
+        for file_name in [p.name for p in dir.iterdir()]
         if check_input_file(dir, file_name, input_exts) is not None
     ]
 
@@ -144,10 +146,10 @@ def transfer_audio_by_format_in_dir(
 
     # 等待所有任务完成
     while len(processes) > 0:
-        new_processes: list[tuple[tuple[str, int], subprocess.Popen | None]] = []
+        new_processes: list[tuple[tuple[Path, int], subprocess.Popen | None]] = []
 
         # 检查进程状态
-        switch_next_list: list[tuple[str, int]] = []
+        switch_next_list: list[tuple[Path, int]] = []
         for process_tuple in processes:
             (file_path, preset_index), process = process_tuple
             # Switch Next?
@@ -162,9 +164,9 @@ def transfer_audio_by_format_in_dir(
                     new_processes.append(((file_path, preset_index), process))
                 elif process_returncode == 0:
                     # Succcess
-                    if remove_origin_file_when_success and os.path.isfile(file_path):
+                    if remove_origin_file_when_success and file_path.is_file():
                         try:
-                            os.remove(file_path)
+                            file_path.unlink()
                         except PermissionError:
                             print(f" -> PermissionError When Deleting: {file_path}")
                 else:
@@ -182,14 +184,14 @@ def transfer_audio_by_format_in_dir(
                 # Last, Return
                 has_error = True
                 # Remove Origin files
-                if remove_origin_file_when_failed and os.path.isfile(file_path):
+                if remove_origin_file_when_failed and file_path.is_file():
                     try:
-                        os.remove(file_path)
+                        file_path.unlink()
                     except PermissionError:
                         print(f" -> PermissionError When Deleting: {file_path}")
                 continue
             # Count
-            fallback_file_names.append((os.path.split(file_path)[-1], new_preset_index))
+            fallback_file_names.append((file_path.name, new_preset_index))
             # Try Next
             task_args.append((file_path, new_preset_index, presets[new_preset_index]))
 
@@ -243,7 +245,7 @@ MODES: list[tuple[str, list[str], list[AudioPreset]]] = [
 
 
 def bms_folder_transfer_audio(
-    root_dir: str,
+    root_dir: Path,
     input_ext: list[str] | None = None,
     transfer_mode: list[AudioPreset] | None = None,
     remove_origin_file_when_success: bool = True,
@@ -262,9 +264,9 @@ def bms_folder_transfer_audio(
         input_ext = MODES[selection][1]
         transfer_mode = MODES[selection][2]
 
-    for bms_dir_name in os.listdir(root_dir):
-        bms_dir_path = os.path.join(root_dir, bms_dir_name)
-        if not os.path.isdir(bms_dir_path):
+    for bms_dir_name in [p.name for p in root_dir.iterdir()]:
+        bms_dir_path = root_dir / bms_dir_name
+        if not bms_dir_path.is_dir():
             continue
         is_success = transfer_audio_by_format_in_dir(
             bms_dir_path,
