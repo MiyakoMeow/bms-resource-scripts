@@ -429,7 +429,7 @@ OPTIONS: list[Option] = [
         undo_split_pack,
         name="BMS大包目录：（撤销操作）将该目录下的作品，按照首字符分成多个文件夹",
         inputs=[Input(InputType.Path, "The target folder path.")],
-        check_func=is_not_a_dir,
+        check_func=is_root_dir,
     ),
     Option(
         move_works_in_pack,

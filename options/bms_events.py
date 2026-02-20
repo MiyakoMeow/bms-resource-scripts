@@ -77,7 +77,7 @@ def jump_to_work_info() -> None:
             webbrowser.open_new_tab(event.list_url())
 
 
-OPTIONS: list[Option] = [Option(name="BMS活动：跳转至作品目录", func=jump_to_work_info)]
+OPTIONS: list[Option] = [Option(name="BMS活动：跳转至作品信息页", func=jump_to_work_info)]
 
 
 if __name__ == "__main__":

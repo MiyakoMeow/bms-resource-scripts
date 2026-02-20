@@ -64,7 +64,7 @@ OPTIONS = [
         check_func=[is_root_dir, check_ffmpeg_exec, check_flac_exec, check_oggenc_exec],
     ),
     Option(
-        func=transfer_audio,
+        func=transfer_video,
         name="BMS根目录：视频文件转换",
         inputs=[
             Input(InputType.Path, "Root Dir"),
