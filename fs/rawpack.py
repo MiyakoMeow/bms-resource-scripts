@@ -22,11 +22,8 @@ def _safe_join(base_dir: Path, relative_path: Path) -> Path:
     candidate = (base_dir / rel).resolve()
     base_dir_norm = base_dir.resolve()
     # Ensure candidate is under base_dir (path-aware)
+    # Use relative_to() to check containment even for non-existent paths
     try:
-        if not candidate.is_relative_to(base_dir_norm):
-            raise ValueError(f"Unsafe path detected: {relative_path}")
-        if not candidate.exists():
-            return candidate
         candidate.relative_to(base_dir_norm)
     except ValueError:
         # Different drives or invalid path -> unsafe
