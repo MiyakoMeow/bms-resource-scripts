@@ -47,18 +47,15 @@ def _get_audio_precess_cmd(
 ) -> str:
     # Execute
     arg = preset.arg if preset.arg is not None else ""
-    # 外部库 subprocess 要求字符串路径用于 shell 命令，需要显式转换
-    file_path_str = str(file_path)
-    output_file_path_str = str(output_file_path)
     if preset.exec == "ffmpeg":
         return (
-            f'ffmpeg -hide_banner -loglevel panic -i "{file_path_str}" '
-            f'-f {preset.output_format} -map_metadata 0 {arg} "{output_file_path_str}"'
+            f'ffmpeg -hide_banner -loglevel panic -i "{file_path}" '
+            f'-f {preset.output_format} -map_metadata 0 {arg} "{output_file_path}"'
         )
     elif preset.exec == "oggenc":
-        return f'oggenc {arg} "{file_path_str}" -o "{output_file_path_str}"'
+        return f'oggenc {arg} "{file_path}" -o "{output_file_path}"'
     elif preset.exec == "flac":
-        return f'flac {arg} "{file_path_str}" -o "{output_file_path_str}"'
+        return f'flac {arg} "{file_path}" -o "{output_file_path}"'
     else:
         return ""
 

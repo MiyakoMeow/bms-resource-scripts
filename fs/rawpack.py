@@ -13,19 +13,16 @@ from fs.move import move_elements_across_dir
 
 
 def _safe_join(base_dir: Path, relative_path: Path) -> Path:
-    # Normalize separators to OS style first
-    relative_path_str = str(relative_path)
-    rel = relative_path_str.replace("/", "/").replace("\\", "/")
-    # Remove drive letters and leading path separators to avoid traversal / drive jump
-    rel = rel.lstrip("/\\")
+    # Normalize separators to POSIX style
+    rel = relative_path.as_posix()
+    # Remove leading path separators to avoid traversal
+    rel = rel.lstrip("/")
     # Compose and normalize
     candidate = (base_dir / rel).resolve()
     base_dir_norm = base_dir.resolve()
     # Ensure candidate is under base_dir (path-aware)
     try:
-        common = str(candidate)
-        common_base = str(base_dir_norm)
-        if not common.startswith(common_base):
+        if not str(candidate).startswith(str(base_dir_norm)):
             raise ValueError(f"Unsafe path detected: {relative_path}")
         if not candidate.exists():
             return candidate
@@ -58,8 +55,7 @@ def _try_decode_cp932_from_cp437(name: str) -> str | None:
 
 def unzip_zip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (zip)")
-    # 外部库 zipfile.ZipFile 要求字符串路径，需要显式转换
-    zf = zipfile.ZipFile(str(file_path))
+    zf = zipfile.ZipFile(file_path)
     infos = zf.infolist()
 
     # 先判断是否需要 cp932 解码（仅对非 UTF-8 条目）
@@ -86,8 +82,7 @@ def unzip_zip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
 
     # 单条目任务：重新打开 zip 以避免多线程共享句柄
     def extract_one(member_name: str) -> None:
-        # 外部库 zipfile.ZipFile 要求字符串路径，需要显式转换
-        with zipfile.ZipFile(str(file_path)) as z2:
+        with zipfile.ZipFile(file_path) as z2:
             info = next(i for i in z2.infolist() if i.filename == member_name)
             rel_name = decode_name(info)
             out_path = _safe_join(cache_dir_path, Path(rel_name))
@@ -113,17 +108,15 @@ def unzip_zip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
 
 def unzip_7z_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (7z)")
-    # 外部库 py7zr.SevenZipFile 要求字符串路径，需要显式转换
-    sevenzip_file = py7zr.SevenZipFile(str(file_path))
-    sevenzip_file.extractall(str(cache_dir_path))
+    sevenzip_file = py7zr.SevenZipFile(file_path)
+    sevenzip_file.extractall(cache_dir_path)
     sevenzip_file.close()
 
 
 def unzip_rar_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
     print(f"Extracting {file_path} to {cache_dir_path} (RAR)")
-    # 外部库 rarfile.RarFile 要求字符串路径，需要显式转换
-    rar_file = rarfile.RarFile(str(file_path))
-    rar_file.extractall(str(cache_dir_path))
+    rar_file = rarfile.RarFile(file_path)
+    rar_file.extractall(cache_dir_path)
     rar_file.close()
 
 
