@@ -192,8 +192,6 @@ def move_out_files_in_folder_in_cache_dir(cache_dir_path: Path) -> bool:
                 if _path.is_file() and _path.name.lower().endswith(CHART_FILE_EXTS):
                     has_bms = True
                     break
-                if has_bms:
-                    break
             if has_bms:
                 # Consider this state acceptable and stop further moving
                 done = True

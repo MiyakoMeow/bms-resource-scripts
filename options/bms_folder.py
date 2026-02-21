@@ -174,6 +174,7 @@ def copy_numbered_workdir_names(root_dir_from: Path, root_dir_to: Path) -> None:
         # Get Num
         dir_num = dir_name.split(" ")[0].split(".")[0]
         if not dir_num.isdigit():
+            print(f"Skipping non-numbered folder: {dir_name}")
             continue
         # Search src name
         for src_name in src_dir_names:
