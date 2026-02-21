@@ -45,8 +45,7 @@ def split_folders_with_first_char(root_dir: Path) -> None:
     if not root_dir.is_dir():
         print(f"{root_dir} is not a dir! Aborting...")
         return
-    str_root_dir = str(root_dir)
-    if str_root_dir.endswith("]"):
+    if root_folder_name.endswith("]"):
         print(f"{root_dir} endswith ']'. Aborting...")
         return
     parent_dir = root_dir.parent
@@ -333,9 +332,9 @@ def move_works_with_same_name(root_dir_from: Path, root_dir_to: Path) -> None:
     for from_dir_name in from_subdirs:
         from_dir_path: Path = root_dir_from / from_dir_name
 
-        # 查找匹配的目标子文件夹（名称包含源文件夹名）
+        # 查找匹配的目标子文件夹（名称以源文件夹名开头）
         for to_dir_name in to_subdirs:
-            if from_dir_name in to_dir_name:
+            if to_dir_name.startswith(from_dir_name):
                 to_dir_path: Path = root_dir_to / to_dir_name
                 pairs.append((from_dir_name, from_dir_path, to_dir_name, to_dir_path))
                 break
@@ -396,7 +395,7 @@ def move_works_with_same_name_to_siblings(root_dir_from: Path) -> None:
         for from_dir_name in from_subdirs:
             from_dir_path = root_dir_from / from_dir_name
             for to_dir_name in to_subdirs:
-                if from_dir_name in to_dir_name:
+                if to_dir_name.startswith(from_dir_name):
                     target_path = sibling_path / to_dir_name
                     pairs.append((from_dir_path, target_path))
                     break

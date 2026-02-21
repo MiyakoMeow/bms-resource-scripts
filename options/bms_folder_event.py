@@ -51,12 +51,17 @@ def generate_work_info_table(root_dir: Path) -> None:
         if info is None:
             continue
         # 获得目录编号
-        id = dir_name.split(".")[0]
+        id_str = dir_name.split(".")[0]
+        # 验证编号是否为纯数字
+        if not id_str.isdigit():
+            print(f"Warning: Skipping dir {dir_name} - invalid id format: {id_str}")
+            continue
+        row = int(id_str)
         # 填充信息
-        worksheet[f"A{id}"] = id
-        worksheet[f"B{id}"] = info.title
-        worksheet[f"C{id}"] = info.artist
-        worksheet[f"D{id}"] = info.genre
+        worksheet[f"A{row}"] = row
+        worksheet[f"B{row}"] = info.title
+        worksheet[f"C{row}"] = info.artist
+        worksheet[f"D{row}"] = info.genre
 
     # 保存 Excel 文件
     table_path = root_dir / "bms_list.xlsx"

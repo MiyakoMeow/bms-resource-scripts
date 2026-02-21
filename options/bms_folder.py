@@ -108,8 +108,6 @@ def _workdir_set_name_by_bms(work_dir: Path) -> bool:
         info = get_dir_bms_info(work_dir)
 
     parent_dir = work_dir.parent
-    if parent_dir is None:
-        raise Exception("Parent is None!")
 
     if len(info.title) == 0 and len(info.artist) == 0:
         print(f"{work_dir}: Info title and artist is EMPTY!")

@@ -113,9 +113,9 @@ def pack_setup_rawpack_to_hq(pack_dir: Path, root_dir: Path) -> None:
     print(f" > 1. Unzip packs from {pack_dir} to {root_dir}")
     cache_dir = root_dir / "CacheDir"
     unzip_numeric_to_bms_folder(
-        root_dir=root_dir,
         pack_dir=pack_dir,
         cache_dir=cache_dir,
+        root_dir=root_dir,
     )
     if not is_dir_having_file(cache_dir):
         cache_dir.rmdir()
@@ -175,9 +175,9 @@ def pack_update_rawpack_to_hq(pack_dir: Path, root_dir: Path, sync_dir: Path) ->
     # Unzip
     print(f" > 1. Unzip packs from {pack_dir} to {root_dir}")
     unzip_numeric_to_bms_folder(
-        root_dir=root_dir,
         pack_dir=pack_dir,
         cache_dir=root_dir / "CacheDir",
+        root_dir=root_dir,
     )
     # Syncing folder name
     print(f" > 2. Syncing dir name from {sync_dir} to {root_dir}")

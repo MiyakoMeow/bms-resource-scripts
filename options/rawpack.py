@@ -22,7 +22,8 @@ def unzip_numeric_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Path,
         for file_name in num_set_file_names:
             print(f" --> {file_name}")
         selection = input("-> Confirm [y/N]:")
-        if selection.lower().startswith("y"):
+        if not selection.lower().startswith("y"):
+            print("Aborted.")
             return
 
     for file_name in num_set_file_names:
@@ -96,7 +97,8 @@ def unzip_with_name_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Pat
         for file_name in num_set_file_names:
             print(f" --> {file_name}")
         selection = input("-> Confirm [y/N]:")
-        if selection.lower().startswith("y"):
+        if not selection.lower().startswith("y"):
+            print("Aborted.")
             return
 
     for file_name in num_set_file_names:
@@ -216,6 +218,10 @@ def set_file_num(dir: Path) -> None:
             disallow_ext=[],
             allow_others=False,
         )
+        # 询问是否继续
+        cont = input("继续处理其他文件? [y/N]: ")
+        if not cont.lower().startswith("y"):
+            break
 
 
 OPTIONS: list[Option] = [
