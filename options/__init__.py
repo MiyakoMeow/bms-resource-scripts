@@ -167,7 +167,7 @@ class Option:
             for idx, check in enumerate(checks, start=1):
                 try:
                     passed = check(*args)
-                except Exception as e:
+                except (ValueError, TypeError, OSError, RuntimeError) as e:
                     print(f" - 检查 {idx} 异常：{e}")
                     return
                 if not passed:

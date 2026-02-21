@@ -19,15 +19,15 @@ RE_JAPANESE_KATAKANA = re.compile("[\u30a0-\u30ff]+")
 RE_CHINESE_CHARACTER = re.compile("[\u4e00-\u9fa5]+")
 
 FIRST_CHAR_RULES: list[tuple[str, Callable[[str], bool]]] = [
-    ("0-9", lambda name: "0" <= name[0].upper() <= "9"),
-    ("ABCD", lambda name: "A" <= name[0].upper() <= "D"),
-    ("EFGHIJK", lambda name: "E" <= name[0].upper() <= "K"),
-    ("LMNOPQ", lambda name: "L" <= name[0].upper() <= "Q"),
-    ("RST", lambda name: "R" <= name[0].upper() <= "T"),
-    ("UVWXYZ", lambda name: "U" <= name[0].upper() <= "Z"),
-    ("平假名", lambda name: RE_JAPANESE_HIRAGANA.search(name[0]) is not None),
-    ("片假名", lambda name: RE_JAPANESE_KATAKANA.search(name[0]) is not None),
-    ("汉字", lambda name: RE_CHINESE_CHARACTER.search(name[0]) is not None),
+    ("0-9", lambda name: len(name) > 0 and "0" <= name[0].upper() <= "9"),
+    ("ABCD", lambda name: len(name) > 0 and "A" <= name[0].upper() <= "D"),
+    ("EFGHIJK", lambda name: len(name) > 0 and "E" <= name[0].upper() <= "K"),
+    ("LMNOPQ", lambda name: len(name) > 0 and "L" <= name[0].upper() <= "Q"),
+    ("RST", lambda name: len(name) > 0 and "R" <= name[0].upper() <= "T"),
+    ("UVWXYZ", lambda name: len(name) > 0 and "U" <= name[0].upper() <= "Z"),
+    ("平假名", lambda name: len(name) > 0 and RE_JAPANESE_HIRAGANA.search(name[0]) is not None),
+    ("片假名", lambda name: len(name) > 0 and RE_JAPANESE_KATAKANA.search(name[0]) is not None),
+    ("汉字", lambda name: len(name) > 0 and RE_CHINESE_CHARACTER.search(name[0]) is not None),
     ("+", lambda name: len(name) > 0),
 ]
 
@@ -116,26 +116,25 @@ def merge_split_folders(root_dir: Path) -> None:
             # Append
             pairs.append((dir_name, dir_name_without_artist))
 
-    # Check dumplate
     last_from_dir_name = ""
-    dumplate_list: list[str] = []
+    duplicate_list: list[str] = []
     for _target_dir_name, from_dir_name in pairs:
         if last_from_dir_name == from_dir_name:
-            dumplate_list.append(from_dir_name)
+            duplicate_list.append(from_dir_name)
         last_from_dir_name = from_dir_name
 
-    if len(dumplate_list) > 0:
-        print("Dumplate!")
-        for name in dumplate_list:
+    if len(duplicate_list) > 0:
+        print("Duplicate!")
+        for name in duplicate_list:
             print(f" -> {name}")
-        raise ValueError(f"Found duplicate target directories: {dumplate_list}")
+        raise ValueError(f"Found duplicate target directories: {duplicate_list}")
 
     # Confirm
     for target_dir_name, from_dir_name in pairs:
         # Print
         print(f"- Find Dir pair: {target_dir_name} <- {from_dir_name}")
 
-    selection = input(f"There are {len(pairs)} actions. Do transfering? [y/N]:")
+    selection = input(f"There are {len(pairs)} actions. Do transferring? [y/N]:")
     if not selection.lower().startswith("y"):
         print("Aborted.")
         return

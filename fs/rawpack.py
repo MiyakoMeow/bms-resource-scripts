@@ -93,7 +93,7 @@ def unzip_zip_file_to_cache_dir(file_path: Path, cache_dir_path: Path) -> None:
                 shutil.copyfileobj(src, dst, length=1024 * 1024)
             _set_mtime(out_path, info.date_time)
 
-    max_workers = multiprocessing.cpu_count()
+    max_workers = max(1, min(multiprocessing.cpu_count(), 4))
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(extract_one, i.filename) for i in infos]
         for f in as_completed(futures):

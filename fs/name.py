@@ -1,7 +1,7 @@
 from bms.parse import BMSInfo
 
 
-def get_vaild_fs_name(ori_name: str) -> str:
+def get_valid_fs_name(ori_name: str) -> str:
     """
     Signs:
     ：＼／＊？＂＜＞｜
@@ -21,4 +21,4 @@ def get_vaild_fs_name(ori_name: str) -> str:
 
 
 def get_work_folder_name(id: str, info: BMSInfo) -> str:
-    return f"{id}. {get_vaild_fs_name(info.title)} [{get_vaild_fs_name(info.artist)}]"
+    return f"{id}. {get_valid_fs_name(info.title)} [{get_valid_fs_name(info.artist)}]"

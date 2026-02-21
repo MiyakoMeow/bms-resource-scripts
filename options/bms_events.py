@@ -48,13 +48,11 @@ def jump_to_work_info() -> None:
 
     while True:
         num_str = input(tips).strip().replace("[", "").replace("]", "")
-        nums_1 = num_str.split()
         nums: list[int] = []
-        for num_1 in nums_1:
-            for num in num_1.split(","):
-                if len(num) == 0:
-                    continue
-                nums.append(int(num))
+        for token in num_str.replace(",", " ").split():
+            if len(token) == 0:
+                continue
+            nums.append(int(token))
         if len(nums) > 2:
             for num_val in nums:
                 webbrowser.open_new_tab(event.work_info_url(num_val))

@@ -5,7 +5,7 @@ from pathlib import Path
 from bms import MEDIA_FILE_EXTS, BMSInfo, get_dir_bms_info
 from fs import bms_dir_similarity
 from fs.move import REPLACE_OPTION_UPDATE_PACK, move_elements_across_dir
-from fs.name import get_vaild_fs_name
+from fs.name import get_valid_fs_name
 from options import Input, InputType, Option, is_root_dir
 
 
@@ -26,11 +26,11 @@ def append_artist_name_by_bms(root_dir: Path) -> None:
         if bms_info is None:
             print(f"Dir {dir_path} has no bms files!")
             continue
-        new_dir_name = f"{dir_name} [{get_vaild_fs_name(bms_info.artist)}]"
+        new_dir_name = f"{dir_name} [{get_valid_fs_name(bms_info.artist)}]"
         print(f"- Ready to rename: {dir_name} -> {new_dir_name}")
         pairs.append((dir_name, new_dir_name))
 
-    selection = input("Do transfering? [y/N]:")
+    selection = input("Do transferring? [y/N]:")
     if not selection.lower().startswith("y"):
         print("Aborted.")
         return
@@ -61,7 +61,7 @@ def _workdir_append_name_by_bms(work_dir: Path) -> bool:
     artist = info.artist
 
     # Rename
-    new_dir_path = work_dir.parent / f"{work_dir.name}. {get_vaild_fs_name(title)} [{get_vaild_fs_name(artist)}]"
+    new_dir_path = work_dir.parent / f"{work_dir.name}. {get_valid_fs_name(title)} [{get_valid_fs_name(artist)}]"
     shutil.move(work_dir, new_dir_path)
     return True
 
@@ -114,7 +114,7 @@ def _workdir_set_name_by_bms(work_dir: Path) -> bool:
         return False
 
     # Rename
-    new_dir_path = parent_dir / f"{get_vaild_fs_name(info.title)} [{get_vaild_fs_name(info.artist)}]"
+    new_dir_path = parent_dir / f"{get_valid_fs_name(info.title)} [{get_valid_fs_name(info.artist)}]"
 
     # Same? Ignore
     if work_dir == new_dir_path:
