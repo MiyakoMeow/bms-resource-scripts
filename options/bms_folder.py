@@ -208,10 +208,20 @@ def undo_set_name(root_dir: Path) -> None:
         dir_path = root_dir / dir_name
         if not dir_path.is_dir():
             continue
-        new_dir_name = dir_name.split(" ")[0]
+
+        # 查找第一个空格前的内容，移除 "[艺术家]" 部分
+        parts = dir_name.split(" ", 1)
+        new_dir_name = parts[0] if len(parts) > 0 else dir_name
+
         new_dir_path = root_dir / new_dir_name
         if dir_name == new_dir_name:
             continue
+
+        # 防止覆盖已存在的目录
+        if new_dir_path.is_dir():
+            print(f"Warning: Target {new_dir_path} already exists! Skipping {dir_name}")
+            continue
+
         print(f"Rename {dir_name} to {new_dir_name}")
         shutil.move(dir_path, new_dir_path)
 

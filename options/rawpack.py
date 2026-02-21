@@ -53,10 +53,10 @@ def unzip_numeric_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Path,
             dir_path = root_dir / dir_name
             if not dir_path.is_dir():
                 continue
-            if not (
-                dir_name.startswith(id_str)
-                and (len(dir_name) == len(id_str) or dir_name[len(id_str) :].startswith("."))
-            ):
+            # 确保精确匹配：id_str 后面必须是分隔符或字符串结束
+            # 避免将 "1" 匹配到 "10"、"11" 等
+            remaining = dir_name[len(id_str) :] if dir_name.startswith(id_str) else ""
+            if not (len(remaining) == 0 or remaining[0] in ". "):
                 continue
             target_dir_path = dir_path
 
@@ -103,9 +103,9 @@ def unzip_with_name_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Pat
 
     for file_name in num_set_file_names:
         file_path = pack_dir / file_name
+        # 获取文件名（不含扩展名），并移除末尾的所有点号
         file_name_without_ext = file_path.stem
-        while len(file_name_without_ext) > 0 and file_name_without_ext[-1] == ".":
-            file_name_without_ext = file_name_without_ext[:-1]
+        file_name_without_ext = file_name_without_ext.rstrip(".")
 
         # Prepare an empty cache dir
         cache_dir_path = cache_dir / file_name_without_ext

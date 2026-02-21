@@ -20,7 +20,12 @@ def create_num_folders(root_dir: Path, folder_count: int) -> None:
         new_dir_name = f"{id}"
         id_exists = False
         for element_name in existing_elements:
-            if element_name.startswith(f"{new_dir_name}"):
+            # 精确匹配或检查分隔符，避免 "1" 匹配到 "10"
+            if (
+                element_name == new_dir_name
+                or element_name.startswith(f"{new_dir_name}.")
+                or element_name.startswith(f"{new_dir_name} ")
+            ):
                 id_exists = True
                 break
 
