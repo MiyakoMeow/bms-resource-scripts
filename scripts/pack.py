@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from fs import remove_empty_folder
 from fs.move import is_dir_having_file
@@ -32,7 +32,7 @@ from options.bms_folder_bigpack import (
 from options.rawpack import unzip_numeric_to_bms_folder
 
 
-def pack_raw_to_hq(root_dir: str) -> None:
+def pack_raw_to_hq(root_dir: Path) -> None:
     """
     This function is for parsing Raw version to HQ version.
     Just for beatoraja/Qwilight players.
@@ -45,14 +45,14 @@ def pack_raw_to_hq(root_dir: str) -> None:
         transfer_mode=[AUDIO_PRESET_FLAC, AUDIO_PRESET_FLAC_FFMPEG],
         remove_origin_file_when_success=True,
         remove_origin_file_when_failed=True,
-        skip_on_fail=False,
+        stop_on_error=False,
     )
     # Remove Unneed Media File
     print("Removing Unneed Files")
     remove_unneed_media_files(root_dir, rule=REMOVE_MEDIA_RULE_ORAJA)
 
 
-def pack_hq_to_lq(root_dir: str) -> None:
+def pack_hq_to_lq(root_dir: Path) -> None:
     """This file is for parsing HQ version to LQ version. Just for LR2 players."""
     # Parse Audio
     print("Parsing Audio... Phase 1: FLAC -> OGG")
@@ -62,7 +62,7 @@ def pack_hq_to_lq(root_dir: str) -> None:
         transfer_mode=[AUDIO_PRESET_OGG_Q10],
         remove_origin_file_when_success=True,
         remove_origin_file_when_failed=False,
-        skip_on_fail=False,
+        stop_on_error=False,
     )
     # Parse Audio
     print("Parsing Video...")
@@ -79,10 +79,10 @@ def pack_hq_to_lq(root_dir: str) -> None:
     )
 
 
-def _pack_setup_rawpack_to_hq_check(pack_dir: str, root_dir: str) -> bool:
+def _pack_setup_rawpack_to_hq_check(pack_dir: Path, root_dir: Path) -> bool:
     # Input 1
     print(" - Input 1: Pack dir path")
-    if not os.path.isdir(pack_dir):
+    if not pack_dir.is_dir():
         print("Pack dir is not vaild dir.")
         return False
     # Print Packs
@@ -92,13 +92,13 @@ def _pack_setup_rawpack_to_hq_check(pack_dir: str, root_dir: str) -> bool:
         print(f" > {file_name}")
     # Input 2
     print(" - Input 2: BMS Cache Folder path. (Input a dir path that NOT exists)")
-    if os.path.isdir(root_dir):
+    if root_dir.is_dir():
         print("Root dir is an existing dir.")
         return False
     return True
 
 
-def pack_setup_rawpack_to_hq(pack_dir: str, root_dir: str) -> None:
+def pack_setup_rawpack_to_hq(pack_dir: Path, root_dir: Path) -> None:
     """
     BMS Pack Generator by MiyakoMeow.
     - For Pack Create:
@@ -108,17 +108,17 @@ def pack_setup_rawpack_to_hq(pack_dir: str, root_dir: str) -> None:
     see options/rawpack.py => set_file_num
     """
     # Setup
-    os.makedirs(root_dir, exist_ok=False)
+    root_dir.mkdir(parents=True, exist_ok=False)
     # Unzip
     print(f" > 1. Unzip packs from {pack_dir} to {root_dir}")
-    cache_dir = os.path.join(root_dir, "CacheDir")
+    cache_dir = root_dir / "CacheDir"
     unzip_numeric_to_bms_folder(
-        root_dir=root_dir,
         pack_dir=pack_dir,
         cache_dir=cache_dir,
+        root_dir=root_dir,
     )
     if not is_dir_having_file(cache_dir):
-        os.rmdir(cache_dir)
+        cache_dir.rmdir()
     # Syncing folder name
     print(" > 2. Setting dir names from BMS Files")
     append_name_by_bms(root_dir=root_dir)
@@ -129,17 +129,17 @@ def pack_setup_rawpack_to_hq(pack_dir: str, root_dir: str) -> None:
         input_ext=["wav"],
         transfer_mode=[AUDIO_PRESET_FLAC, AUDIO_PRESET_FLAC_FFMPEG],
         remove_origin_file_when_success=True,
-        skip_on_fail=False,
+        stop_on_error=False,
     )
     # Remove Unneed Media File
     print(" > 4. Removing Unneed Files")
     remove_unneed_media_files(root_dir=root_dir, rule=REMOVE_MEDIA_RULE_ORAJA)
 
 
-def _pack_update_rawpack_to_hq_check(pack_dir: str, root_dir: str, sync_dir: str) -> bool:
+def _pack_update_rawpack_to_hq_check(pack_dir: Path, root_dir: Path, sync_dir: Path) -> bool:
     # Input 1
     print(" - Input 1: Pack dir path")
-    if not os.path.isdir(pack_dir):
+    if not pack_dir.is_dir():
         print("Pack dir is not vaild dir.")
         return False
     # Print Packs
@@ -149,19 +149,19 @@ def _pack_update_rawpack_to_hq_check(pack_dir: str, root_dir: str, sync_dir: str
         print(f" > {file_name}")
     # Input 2
     print(" - Input 2: BMS Cache Folder path. (Input a dir path that NOT exists)")
-    if os.path.isdir(root_dir):
+    if root_dir.is_dir():
         print("Root dir is an existing dir.")
         return False
     # Input 3
     print(" - Input 3: Already exists BMS Folder path. (Input a dir path that ALREADY exists)")
     print("This script will use this dir, just for name syncing and file checking.")
-    if not os.path.isdir(sync_dir):
+    if not sync_dir.is_dir():
         print("Syncing dir is not vaild dir.")
         return False
     return True
 
 
-def pack_update_rawpack_to_hq(pack_dir: str, root_dir: str, sync_dir: str) -> None:
+def pack_update_rawpack_to_hq(pack_dir: Path, root_dir: Path, sync_dir: Path) -> None:
     """
     BMS Pack Generator by MiyakoMeow.
      - For Pack Update:
@@ -171,13 +171,13 @@ def pack_update_rawpack_to_hq(pack_dir: str, root_dir: str, sync_dir: str) -> No
     see scripts_rawpack/rawpack_set_num.py
     """
     # Setup
-    os.makedirs(root_dir, exist_ok=False)
+    root_dir.mkdir(parents=True, exist_ok=False)
     # Unzip
     print(f" > 1. Unzip packs from {pack_dir} to {root_dir}")
     unzip_numeric_to_bms_folder(
-        root_dir=root_dir,
         pack_dir=pack_dir,
-        cache_dir=os.path.join(root_dir, "CacheDir"),
+        cache_dir=root_dir / "CacheDir",
+        root_dir=root_dir,
     )
     # Syncing folder name
     print(f" > 2. Syncing dir name from {sync_dir} to {root_dir}")
@@ -189,7 +189,7 @@ def pack_update_rawpack_to_hq(pack_dir: str, root_dir: str, sync_dir: str) -> No
         input_ext=["wav"],
         transfer_mode=[AUDIO_PRESET_FLAC, AUDIO_PRESET_FLAC_FFMPEG],
         remove_origin_file_when_success=True,
-        skip_on_fail=False,
+        stop_on_error=False,
     )
     # Remove Unneed Media File
     print(" > 4. Removing Unneed Files")

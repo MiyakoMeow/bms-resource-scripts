@@ -1,40 +1,47 @@
-import os
+from __future__ import annotations
+
 import subprocess
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from pathlib import Path
 from typing import Any
 
 from bms import CHART_FILE_EXTS, MEDIA_FILE_EXTS
 
 # 获取当前文件的绝对路径
-_CURRENT_PATH = os.path.abspath(__file__)
+_CURRENT_PATH = Path(__file__).resolve()
 
 # 获取当前文件所在目录
-_CURRENT_DIR = os.path.dirname(_CURRENT_PATH)
+_CURRENT_DIR = _CURRENT_PATH.parent
 
-_LOG_FILE_PATH = os.path.join(_CURRENT_DIR, "history.log")
+_LOG_FILE_PATH = _CURRENT_DIR / "history.log"
 
 
-def input_path() -> str:
-    if not os.path.isfile(_LOG_FILE_PATH):
-        with open(_LOG_FILE_PATH, "w") as f:
+def input_path() -> Path:
+    if not _LOG_FILE_PATH.is_file():
+        with _LOG_FILE_PATH.open("w") as f:
             f.write("\n")
 
-    # 读取历史路径
-    paths = []
-    with open(_LOG_FILE_PATH) as f:
-        paths = [path.lstrip() for path in f.readlines()]
-        paths = [path for path in paths if len(path) > 0]
-        paths = [(path[:-1] if path.endswith("\n") else path) for path in paths]
-        paths = [(path[:-1] if path.endswith("\r") else path) for path in paths]
-        paths = [(path[1:-1] if path.startswith('"') and path.endswith('"') else path) for path in paths]
-        paths = [path.lstrip() for path in paths]
+    # 读取历史路径，存储为Path对象
+    paths: list[Path] = []
+    with _LOG_FILE_PATH.open() as f:
+        for line in f.readlines():
+            path_str = line.strip()
+            if len(path_str) == 0:
+                continue
+            # 移除引号
+            if path_str.startswith('"') and path_str.endswith('"'):
+                path_str = path_str[1:-1]
+            paths.append(Path(path_str))
 
     # 去重并保持顺序，越往前代表时间越近
-    unique_paths = []
+    seen: set[str] = set()
+    unique_paths: list[Path] = []
     for path in paths:
-        if path not in unique_paths:
+        path_str = str(path)
+        if path_str not in seen:
+            seen.add(path_str)
             unique_paths.append(path)
     paths = unique_paths  # 保存所有选择过的路径
 
@@ -62,26 +69,33 @@ def input_path() -> str:
 
     # 处理选择
     if selection_str.isdigit() and 0 <= int(selection_str) < len(paths):
-        selection = paths[int(selection_str)]
+        selected_path = paths[int(selection_str)]
         # 将选中的路径移到最前面（最新的位置）
-        paths.remove(selection)
-        paths.insert(0, selection)
+        paths.pop(int(selection_str))
+        paths.insert(0, selected_path)
     else:
-        selection = selection_str
+        selected_path = Path(selection_str)
         # 将新路径添加到最前面
-        if selection not in paths:
-            paths.insert(0, selection)
+        selected_path_str = str(selected_path)
+        existing_index = None
+        for i, p in enumerate(paths):
+            if str(p) == selected_path_str:
+                existing_index = i
+                break
+        if existing_index is None:
+            paths.insert(0, selected_path)
         else:
             # 如果已存在，移动到最前面
-            paths.remove(selection)
-            paths.insert(0, selection)
+            paths.pop(existing_index)
+            paths.insert(0, selected_path)
 
     # 保存更新后的路径（保存所有选择过的路径）
-    with open(_LOG_FILE_PATH, "w") as f:
+    with _LOG_FILE_PATH.open("w") as f:
         for path in paths:
-            f.write(path + "\n")
+            # 序列化到文件时需要转换为字符串
+            f.write(str(path) + "\n")
 
-    return selection
+    return selected_path
 
 
 class InputType(Enum):
@@ -153,7 +167,7 @@ class Option:
             for idx, check in enumerate(checks, start=1):
                 try:
                     passed = check(*args)
-                except Exception as e:
+                except (ValueError, TypeError, OSError, RuntimeError) as e:
                     print(f" - 检查 {idx} 异常：{e}")
                     return
                 if not passed:
@@ -189,16 +203,10 @@ class Option:
         self.func(*args)
 
 
-def is_root_dir(*root_dir: str) -> bool:
+def is_root_dir(*root_dir: Path) -> bool:
     for dir in root_dir:
         result = (
-            len(
-                [
-                    file
-                    for file in os.listdir(dir)
-                    if file.endswith(CHART_FILE_EXTS + MEDIA_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
-                ]
-            )
+            len([p.name for p in dir.iterdir() if p.name.endswith(CHART_FILE_EXTS + MEDIA_FILE_EXTS) and p.is_file()])
             == 0
         )
         if not result:
@@ -206,33 +214,19 @@ def is_root_dir(*root_dir: str) -> bool:
     return True
 
 
-def is_work_dir(*root_dir: str) -> bool:
+def is_work_dir(*root_dir: Path) -> bool:
     for dir in root_dir:
         result = (
-            len(
-                [
-                    file
-                    for file in os.listdir(dir)
-                    if file.endswith(CHART_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
-                ]
-            )
-            > 0
-            and len(
-                [
-                    file
-                    for file in os.listdir(dir)
-                    if file.endswith(MEDIA_FILE_EXTS) and os.path.isfile(os.path.join(dir, file))
-                ]
-            )
-            > 0
+            len([p.name for p in dir.iterdir() if p.name.endswith(CHART_FILE_EXTS) and p.is_file()]) > 0
+            and len([p.name for p in dir.iterdir() if p.name.endswith(MEDIA_FILE_EXTS) and p.is_file()]) > 0
         )
         if not result:
             return False
     return True
 
 
-def is_not_a_dir(dir: str) -> bool:
-    return not os.path.isdir(dir)
+def is_not_a_dir(dir: Path) -> bool:
+    return not dir.is_dir()
 
 
 # === Exec checks (split by executable) ===

@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from bms.encoding import BOFTT_ID_SPECIFIC_ENCODING_TABLE
 from bms.parse import BMSInfo, parse_bms_file, parse_bmson_file
@@ -19,20 +19,19 @@ IMAGE_FILE_EXTS = (".jpg", ".png", ".bmp", ".svg")
 MEDIA_FILE_EXTS = AUDIO_FILE_EXTS + VIDEO_FILE_EXTS + IMAGE_FILE_EXTS
 
 
-def get_dir_bms_list(dir_path: str) -> list[BMSInfo]:
+def get_dir_bms_list(dir_path: Path) -> list[BMSInfo]:
     """仅寻找该目录第一层的文件"""
     info_list: list[BMSInfo] = []
     # For BOFTT
-    id = os.path.split(dir_path)[-1].split(".")[0]
+    id = dir_path.name.split(".")[0] if "." in dir_path.name else dir_path.name
     encoding = BOFTT_ID_SPECIFIC_ENCODING_TABLE.get(id)
     # Scan
-    for file_name in os.listdir(dir_path):
-        file_path = os.path.join(dir_path, file_name)
+    for file_path in dir_path.iterdir():
         # Parse
         info: BMSInfo | None = None
-        if file_name.lower().endswith(BMS_FILE_EXTS) and os.path.isfile(file_path):
+        if file_path.name.lower().endswith(BMS_FILE_EXTS) and file_path.is_file():
             info = parse_bms_file(file_path, encoding)
-        elif file_name.lower().endswith(BMSON_FILE_EXTS) and os.path.isfile(file_path):
+        elif file_path.name.lower().endswith(BMSON_FILE_EXTS) and file_path.is_file():
             info = parse_bmson_file(file_path, encoding)
         # Append
         if info is not None:
@@ -40,7 +39,7 @@ def get_dir_bms_list(dir_path: str) -> list[BMSInfo]:
     return info_list
 
 
-def get_dir_bms_info(bms_dir_path: str) -> BMSInfo | None:
+def get_dir_bms_info(bms_dir_path: Path) -> BMSInfo | None:
     # Find bmses
     bms_list: list[BMSInfo] = get_dir_bms_list(bms_dir_path)
     if len(bms_list) == 0:

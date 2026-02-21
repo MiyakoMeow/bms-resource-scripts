@@ -35,7 +35,7 @@ def jump_to_work_info() -> None:
         print(f" {event.value} -> {event.name}")
     event_value_selection = input("Input event value (Default: BOFTT):")
     if len(event_value_selection) == 0:
-        event_value_selection = "20"
+        event_value_selection = str(BMSEvent.BOFTT.value)
     event = BMSEvent(int(event_value_selection))
     print(f" -> Selected Event: {event.name}")
 
@@ -48,13 +48,11 @@ def jump_to_work_info() -> None:
 
     while True:
         num_str = input(tips).strip().replace("[", "").replace("]", "")
-        nums_1 = num_str.split()
         nums: list[int] = []
-        for num_1 in nums_1:
-            for num in num_1.split(","):
-                if len(num) == 0:
-                    continue
-                nums.append(int(num))
+        for token in num_str.replace(",", " ").split():
+            if len(token) == 0:
+                continue
+            nums.append(int(token))
         if len(nums) > 2:
             for num_val in nums:
                 webbrowser.open_new_tab(event.work_info_url(num_val))
@@ -77,7 +75,7 @@ def jump_to_work_info() -> None:
             webbrowser.open_new_tab(event.list_url())
 
 
-OPTIONS: list[Option] = [Option(name="BMS活动：跳转至作品目录", func=jump_to_work_info)]
+OPTIONS: list[Option] = [Option(name="BMS活动：跳转至作品信息页", func=jump_to_work_info)]
 
 
 if __name__ == "__main__":
