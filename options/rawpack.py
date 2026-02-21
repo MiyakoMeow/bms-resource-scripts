@@ -55,7 +55,9 @@ def unzip_numeric_to_bms_folder(pack_dir: Path, cache_dir: Path, root_dir: Path,
                 continue
             # 确保精确匹配：id_str 后面必须是分隔符或字符串结束
             # 避免将 "1" 匹配到 "10"、"11" 等
-            remaining = dir_name[len(id_str) :] if dir_name.startswith(id_str) else ""
+            if not dir_name.startswith(id_str):
+                continue
+            remaining = dir_name[len(id_str) :]
             if not (len(remaining) == 0 or remaining[0] in ". "):
                 continue
             target_dir_path = dir_path
