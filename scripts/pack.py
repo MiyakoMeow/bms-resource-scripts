@@ -45,7 +45,7 @@ def pack_raw_to_hq(root_dir: Path) -> None:
         transfer_mode=[AUDIO_PRESET_FLAC, AUDIO_PRESET_FLAC_FFMPEG],
         remove_origin_file_when_success=True,
         remove_origin_file_when_failed=True,
-        skip_on_fail=False,
+        stop_on_error=False,
     )
     # Remove Unneed Media File
     print("Removing Unneed Files")
@@ -62,7 +62,7 @@ def pack_hq_to_lq(root_dir: Path) -> None:
         transfer_mode=[AUDIO_PRESET_OGG_Q10],
         remove_origin_file_when_success=True,
         remove_origin_file_when_failed=False,
-        skip_on_fail=False,
+        stop_on_error=False,
     )
     # Parse Audio
     print("Parsing Video...")
@@ -129,7 +129,7 @@ def pack_setup_rawpack_to_hq(pack_dir: Path, root_dir: Path) -> None:
         input_ext=["wav"],
         transfer_mode=[AUDIO_PRESET_FLAC, AUDIO_PRESET_FLAC_FFMPEG],
         remove_origin_file_when_success=True,
-        skip_on_fail=False,
+        stop_on_error=False,
     )
     # Remove Unneed Media File
     print(" > 4. Removing Unneed Files")
@@ -189,7 +189,7 @@ def pack_update_rawpack_to_hq(pack_dir: Path, root_dir: Path, sync_dir: Path) ->
         input_ext=["wav"],
         transfer_mode=[AUDIO_PRESET_FLAC, AUDIO_PRESET_FLAC_FFMPEG],
         remove_origin_file_when_success=True,
-        skip_on_fail=False,
+        stop_on_error=False,
     )
     # Remove Unneed Media File
     print(" > 4. Removing Unneed Files")

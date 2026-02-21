@@ -248,7 +248,7 @@ def bms_folder_transfer_audio(
     transfer_mode: list[AudioPreset] | None = None,
     remove_origin_file_when_success: bool = True,
     remove_origin_file_when_failed: bool = True,
-    skip_on_fail: bool = False,
+    stop_on_error: bool = False,
 ) -> None:
     # Select Modes
     if transfer_mode is None:
@@ -275,5 +275,5 @@ def bms_folder_transfer_audio(
         )
         if not is_success:
             print(" - Dir:", bms_dir_path, "Error occured!")
-            if skip_on_fail:
+            if stop_on_error:
                 break

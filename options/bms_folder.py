@@ -2,7 +2,7 @@ import difflib
 import shutil
 from pathlib import Path
 
-from bms import BMSInfo, get_dir_bms_info
+from bms import MEDIA_FILE_EXTS, BMSInfo, get_dir_bms_info
 from fs import bms_dir_similarity
 from fs.move import REPLACE_OPTION_UPDATE_PACK, move_elements_across_dir
 from fs.name import get_vaild_fs_name
@@ -245,7 +245,7 @@ def remove_zero_sized_media_files(current_dir: Path, print_dir: bool = False) ->
                 continue
 
             # 检查是否为大小为0的媒体文件
-            if not element_name.endswith((".ogg", ".wav", ".flac", ".bmp", ".mpg", ".wmv", ".mp4")):
+            if not element_name.endswith(MEDIA_FILE_EXTS):
                 continue
             if element_path.stat().st_size > 0:
                 continue
@@ -298,6 +298,7 @@ OPTIONS: list[Option] = [
     ),
     Option(
         undo_set_name,
+        name="BMS根目录：撤销重命名",
         inputs=[Input(InputType.Path, "Root Dir")],
         check_func=is_root_dir,
     ),

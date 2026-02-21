@@ -35,7 +35,7 @@ def jump_to_work_info() -> None:
         print(f" {event.value} -> {event.name}")
     event_value_selection = input("Input event value (Default: BOFTT):")
     if len(event_value_selection) == 0:
-        event_value_selection = "20"
+        event_value_selection = str(BMSEvent.BOFTT.value)
     event = BMSEvent(int(event_value_selection))
     print(f" -> Selected Event: {event.name}")
 

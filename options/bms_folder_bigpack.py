@@ -128,7 +128,7 @@ def merge_split_folders(root_dir: Path) -> None:
         print("Dumplate!")
         for name in dumplate_list:
             print(f" -> {name}")
-        exit()
+        raise ValueError(f"Found duplicate target directories: {dumplate_list}")
 
     # Confirm
     for target_dir_name, from_dir_name in pairs:
