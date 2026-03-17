@@ -7,7 +7,7 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Any
 
-from bms import CHART_FILE_EXTS, MEDIA_FILE_EXTS
+from bms import CHART_FILE_EXTS
 
 # 获取当前文件的绝对路径
 _CURRENT_PATH = Path(__file__).resolve()
