@@ -1,179 +1,165 @@
-# [通用BMS大包生成脚本](https://gitee.com/MiyakoMeow/boftt-pack-generator-scripts)
+# BMS 资源打包脚本
 
-脚本地址：Gitee上搜MiyakoMeow/bms-resource-scripts
+用于管理和打包 BMS（Beatmania）游戏谱面资源的自动化工具集。
 
-## HQ版和LQ版怎么选？
+## 功能特点
 
-1. HQ版：FLAC/OGG音频，同文件名下只保留一种视频格式，优先MP4/AVI，其次WMV/MPG/MPEG。
-2. LQ版：在HQ版的基础上构建，FLAC音频转成OGG，MP4/AVI转成MPG。
+- **BMS 文件解析**：支持解析 BMS/BME/BML/PMS/BMSON 文件，提取标题、艺术家、难度等信息
+- **媒体处理**：支持音频（FLAC/WAV/OGG）和视频（MP4/AVI/WMV/MPEG）格式转换
+- **大包生成**：一键生成 HQ/LQ 版本 BMS 大包
+- **目录管理**：批量重命名、文件夹合并、相似文件检测等
 
-选择建议：
+## 环境要求
 
-1. LR2玩家选LQ版。
-2. 希望获得更高的音频质量和BGA质量，选HQ版。
-3. 希望占用空间更小的玩家，选LQ版。
-
-提示：
-
-1. 本人并非LR2玩家，LQ版包仅在LR2上对少部分作品做了抽查。
-2. 已知问题：部分有BGA的作品，BGA在LR2上无法播放的情况。
-3. 如果有将MP4视频转换成LR2**保证可播放**的格式的方法，或者有关于该大包的其他问题，请联系我。
-
-## BOFTT大包下载链接
-
-### 123云盘
-
-- [123盘链接](https://www.123pan.com/s/Sn7lVv-Mhzm)
-提取码：ORtY
-
-### 度盘
-
-- [度盘链接](https://pan.baidu.com/s/17seD5TCAlquX2rJ6CS4ZDg?pwd=6i8t)
-提取码：6i8t
-
-### 镜像站
-
-- [bms.iidx.ca](https://bms.iidx.ca/bms/BMS/BMS%20%E6%B4%BB%E5%8A%A8%E5%8C%85/BOF%20G2R/%5B2024%5D%20BOFTT/)
-
-## BOFTT大包特殊情况列表
-
-- ！！！no.145, 185, 201, 205, 407：请手动合并更新文件夹。
-
-- no.198, 199, 245, 258, 283, 286, 287, 301 使用了62进制BMS，不兼容LR2和beatoraja 0.8.7之前的版本。
-
-对于LR2玩家，如果导入作品时出现问题，请优先移除以上作品。
-
-- no.239 NSFW作品，提供了可供替换的安全BGI。已包含在大包中，但不默认启用，文件名为*_censored。
-
-- no.155, 312, 452 包含空wav文件，已删除，基本不影响游玩。
-
-- no.472 BMSON文件解析错误（第19行少了一个逗号），已补齐（BMS文件修改注意）。未经修改的文件以_ori为后缀。
-经过实测，在beatoraja 0.8.7中，未经修改的谱面文件无法被读取。
-
-## BOFTT大包更新记录
-
-时区：GMT+8（中国标准时间）
-
-- 2024.10.23 开始重新下载所有包。
-
-- 截至 2024.10.24 00:15, 下载至no.270。
-
-- 截至 2024.10.24 05:00, 下载了全部483个作品。
-
-- 2024.10.26 06:00 更新所有登陆情报修正作品。
-
-- 2024.10.28 08:00 更新所有登陆情报修正作品。
-
-- 2024.10.30 08:00 更新所有登陆情报修正作品。
-
-- 2024.11.04 16:00 更新所有登陆情报修正作品，并修正前几次更新时出现的错误。
-
-- 2024.11.09 13:00 更新所有登陆情报修正作品。
-
-- 2024.11.17 17:00 更新所有登陆情报修正作品。
-
-- 2024.11.25 04:00 更新所有登陆情报修正作品。
-
-- 2024.12.01 02:00 更新所有登陆情报修正作品。
-
-- 2024.12.07 15:50 更新所有登陆情报修正作品。
-
-- 2024.12.11 11:10 更新所有登陆情报修正作品。
-
-- 2024.12.20 22:00 更新所有登陆情报修正作品。此后改为不定期更新。
-
-## 脚本使用方式
-
-运行要求：
-
-- 能够使用命令行操作（本项目暂无GUI版）。
-
-### 所需软件
-
-- [Python](https://python.org)
-
-> 版本至少为3.10。
-
+- Python 3.12+
 - [ffmpeg](https://ffmpeg.org)
-
-> [下载链接](https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z)
-> 下载、解压、将exe文件所在目录添加至Path环境变量。
-
+- [flac](https://xiph.org/flac/)
 - [oggenc](https://www.rarewares.org/ogg-oggenc.php)
 
-> [下载链接](https://www.rarewares.org/files/ogg/oggenc2.88-1.3.7-x64.zip)
-> 下载、解压、将exe文件所在目录添加至Path环境变量。
+## 安装
 
-- [flac](https://xiph.org/flac/index.html)
+1. 克隆项目：
 
-> [下载链接](https://ftp.osuosl.org/pub/xiph/releases/flac/flac-1.4.3-win.zip)
-> 下载、解压、将exe文件所在目录添加至Path环境变量。
-
-### 所需Python库
-
-```commandline
-pip install py7zr rarfile
+```bash
+git clone https://gitee.com/MiyakoMeow/bms-resource-scripts
+cd bms-resource-scripts
 ```
 
-### 第一次打包
+2. 使用 uv 安装依赖（推荐）：
 
-1. 下载BMS文件至BMS_PACK_DIR。
-
-- 不知道在哪？那就先记住你下载的文件所在的目录，在步骤2和步骤3中填入就好。
-- 建议不要将下载的BMS压缩包/媒体文件和其它文件放在同一目录下，以免在步骤2中误识别造成困扰。
-
-2. 运行`rawpack_set_num`，填入步骤1中目录，手动给每个文件的文件名前打上编号。
-
-> - 直接回车刷新文件列表
-> - 输入一个数字A：给文件列表中的第一个文件打上编号A
-> - 输入两个数字A、B：给文件列表中，下标为A的文件，即第（A+1）个文件，打上编号B
-
-3. 运行`pack_setup_rawpack_to_hq`。
-
-- 先填入步骤1中目录。
-- 后填入解压目标文件夹（要求该文件夹不存在，后续程序会创建该文件夹）。
-
-- 以下为示例：
-
-```commandline
-python main.py
-（选择pack_setup_raw_to_hq)
-D:\BMSPacks
-E:\BMSCharts\BOFTT
-y
+```bash
+uv sync
 ```
 
-> - 此脚本会将打上编号后的文件解压或移动至目标路径，然后直接按步骤生成HQ版本BMS目录。
+3. 配置外部工具：
 
-4. 运行`pack_hq_to_lq.py`，填入步骤3填入的解压目标路径。用于制作LQ版本大包。
+将 ffmpeg、flac、oggenc 的可执行文件所在目录添加到系统 Path 环境变量。
 
-> - 该脚本会把路径下的mp4文件转换成mpeg文件，flac文件转换成ogg文件。
-> - 已知问题：Windows下，将音频转换成ogg文件时概率卡住，此时建议使用命令行（oggenc命令）手动转换。
+## 使用方式
 
-### 更新差分包生成
+运行主程序进入交互式菜单：
 
-1. 下载BMS文件至BMS_PACK_DIR。同第一次打包。
-
-2. 运行`rawpack_set_num.py`，使用方法同第一次打包。
-
-3. 运行`pack_update_rawpack_to_hq.py`。
-
-- 先填入步骤1中目录。
-- 再填入差分包文件的存放文件夹（要求该文件夹不存在，后续程序会创建该文件夹）。
-- 最后填入此前的HQ版本BMS目录（要求该文件夹存在）。
-
-- 以下为示例：
-
-```commandline
-python main.py
-（选择pack_update_raw_to_hq)
-D:\BMSPacks
-E:\BMSCharts\BOFTTCache
-E:\BMSCharts\BOFTT
-y
+```bash
+uv run main.py
 ```
 
-> - 此脚本会将打上编号后的文件解压或移动至目标路径，然后直接按步骤生成HQ版本BMS目录。
-> - 执行完该步后，HQ版本的更新差分包就可以制作了。
+按功能分类显示所有可用选项，输入编号即可执行对应功能。
 
-4. 运行`pack_hq_to_lq.py`，填入步骤3填入的解压目标路径。用于制作LQ版本更新差分包。注意点同第一次打包。
+## 功能列表
+
+### BMS 解析
+
+| 功能 | 说明 |
+|------|------|
+| 跳转至作品信息页 | 打开 BMS 活动作品页面 |
+
+### BMS 根目录
+
+| 功能 | 说明 |
+|------|------|
+| 按照 BMS 设置文件夹名 | 根据 BMS 文件信息重命名文件夹为"标题 [艺术家]" |
+| 按照 BMS 追加文件夹名 | 在现有文件夹名后追加"标题 [艺术家]" |
+| 按照 BMS 追加文件夹艺术家名 | 仅追加艺术家名称 |
+| 克隆带编号的文件夹名 | 将源目录的带编号文件夹名同步到目标目录 |
+| 扫描相似文件夹名 | 检测名称相似的文件夹 |
+| 撤销重命名 | 撤销之前的重命名操作 |
+| 移除大小为0的媒体文件和临时文件 | 清理无效文件 |
+
+### BMS 大包目录
+
+| 功能 | 说明 |
+|------|------|
+| 将该目录下的作品，按照首字符分成多个文件夹 | 按首字符（A-Z、平假名、片假名、汉字等）分类 |
+| 将目录A下的作品，移动到目录B | 移动并合并作品目录 |
+| 移出一层目录 | 减少一层目录嵌套 |
+| 将文件名相似的子文件夹合并 | 智能合并相似目录 |
+
+### BMS 媒体
+
+| 功能 | 说明 |
+|------|------|
+| 音频转换 | WAV ↔ FLAC、FLAC → OGG 等格式转换 |
+| 视频转换 | MP4 → AVI/WMV/MPEG，512x512/480p 分辨率转换 |
+
+### BMS 原文件
+
+| 功能 | 说明 |
+|------|------|
+| 将赋予编号的文件解压或放置至指定根目录 | 自动处理编号文件，解压到对应编号目录 |
+| 将文件解压或放置至指定根目录 | 按原文件名创建目录 |
+| 赋予编号 | 为文件添加数字前缀编号 |
+
+### 大包脚本
+
+| 功能 | 说明 |
+|------|------|
+| 原包 → HQ版大包 | 从原始压缩包生成 HQ 版本大包 |
+| HQ版大包 → LQ版大包 | 将 HQ 版转换为 LR2 兼容的 LQ 版 |
+| 差分包更新 | 生成增量更新包 |
+
+## 目录结构
+
+```
+bms-resource-scripts/
+├── bms/                    # BMS 文件解析模块
+│   ├── parse.py           # BMS/BMSON 文件解析
+│   ├── encoding.py        # 编码处理（支持 Shift-JIS、GBK 等）
+│   └── work.py            # 工作信息提取
+├── media/                 # 媒体处理模块
+│   ├── audio.py           # 音频格式转换
+│   └── video.py           # 视频格式转换
+├── fs/                    # 文件系统操作模块
+│   ├── move.py            # 文件移动与合并
+│   ├── sync.py            # 文件夹同步
+│   ├── rawpack.py         # 压缩包处理
+│   └── name.py            # 文件名处理
+├── options/               # 命令行选项模块
+├── scripts/               # 打包脚本
+├── main.py                # 主入口
+└── pyproject.toml         # 项目配置
+```
+
+## 典型工作流程
+
+### 首次打包 HQ 版大包
+
+1. 下载 BMS 压缩包到指定目录
+2. 运行 `uv run main.py`，选择 `BMS原文件：赋予编号`，为每个文件添加编号
+3. 运行 `大包生成脚本：原包 -> HQ版大包`
+4. 选择压缩包目录和目标目录
+
+### 生成 LR2 兼容的 LQ 版
+
+在完成 HQ 版后，运行 `BMS大包脚本：HQ版大包 -> LQ版大包`
+
+- FLAC → OGG 转换
+- MP4/AVI → MPG/WMV 转换
+
+## 技术细节
+
+### 支持的 BMS 文件格式
+
+- `.bms`、`.bme`、`.bml`、`.pms`（BMS 格式）
+- `.bmson`（BMSON JSON 格式）
+
+### 支持的媒体格式
+
+- 音频：`.flac`、`.ogg`、`.wav`
+- 视频：`.mp4`、`.mkv`、`.avi`、`.wmv`、`.mpg`、`.mpeg`
+
+### 编码支持
+
+- Shift-JIS（日文）
+- GB2312/GBK/GB18030（中文）
+- UTF-8
+
+项目还包含 BOFTT（Beatmania Open Files Two Turn）活动的专用配置。
+
+## 相关链接
+
+- [Gitee 仓库](https://gitee.com/MiyakoMeow/bms-resource-scripts)
+- BOFTT 大包下载：[123云盘](https://www.123pan.com/s/Sn7lVv-Mhzm)（提取码：ORtY）
+
+## 许可证
+
+Apache License 2.0
