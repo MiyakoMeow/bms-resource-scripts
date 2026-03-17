@@ -25,21 +25,13 @@ git clone https://gitee.com/MiyakoMeow/bms-resource-scripts
 cd bms-resource-scripts
 ```
 
-2. 创建虚拟环境（推荐）：
+2. 使用 uv 安装依赖（推荐）：
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # Linux/Mac
+uv sync
 ```
 
-3. 安装依赖：
-
-```bash
-pip install py7zr rarfile openpyxl
-```
-
-4. 配置外部工具：
+3. 配置外部工具：
 
 将 ffmpeg、flac、oggenc 的可执行文件所在目录添加到系统 Path 环境变量。
 
@@ -48,7 +40,7 @@ pip install py7zr rarfile openpyxl
 运行主程序进入交互式菜单：
 
 ```bash
-python main.py
+uv run main.py
 ```
 
 按功能分类显示所有可用选项，输入编号即可执行对应功能。
@@ -132,7 +124,7 @@ bms-resource-scripts/
 ### 首次打包 HQ 版大包
 
 1. 下载 BMS 压缩包到指定目录
-2. 运行 `BMS原文件：赋予编号`，为每个文件添加编号
+2. 运行 `uv run main.py`，选择 `BMS原文件：赋予编号`，为每个文件添加编号
 3. 运行 `大包生成脚本：原包 -> HQ版大包`
 4. 选择压缩包目录和目标目录
 
