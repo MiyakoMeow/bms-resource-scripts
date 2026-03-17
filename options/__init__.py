@@ -205,10 +205,7 @@ class Option:
 
 def is_root_dir(*root_dir: Path) -> bool:
     for dir in root_dir:
-        result = (
-            len([p.name for p in dir.iterdir() if p.name.endswith(CHART_FILE_EXTS + MEDIA_FILE_EXTS) and p.is_file()])
-            == 0
-        )
+        result = len([p.name for p in dir.iterdir() if p.name.endswith(CHART_FILE_EXTS) and p.is_file()]) == 0
         if not result:
             return False
     return True
@@ -216,10 +213,7 @@ def is_root_dir(*root_dir: Path) -> bool:
 
 def is_work_dir(*root_dir: Path) -> bool:
     for dir in root_dir:
-        result = (
-            len([p.name for p in dir.iterdir() if p.name.endswith(CHART_FILE_EXTS) and p.is_file()]) > 0
-            and len([p.name for p in dir.iterdir() if p.name.endswith(MEDIA_FILE_EXTS) and p.is_file()]) > 0
-        )
+        result = len([p.name for p in dir.iterdir() if p.name.endswith(CHART_FILE_EXTS) and p.is_file()]) > 0
         if not result:
             return False
     return True
